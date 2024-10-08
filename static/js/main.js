@@ -92,6 +92,7 @@ function addTask() {
           console.log(response);
           if (!response.ok) {
               console.log('uh oh');
+              console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task')
               return response.json().then(err => { throw err; });
           }
           return response.json();

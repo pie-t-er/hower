@@ -9,28 +9,33 @@ from models.task import Task
 from models.event import Event
 from models.extensions import db
 
+# initializing the app and SQLAlchemy
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'  # Single database file
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+# connecting the app to the database from models/extensions.py
 db.init_app(app)
 
+# initializing app context and creating the tables of the database
 with app.app_context():
     db.create_all()
-    # Check if the default user exists
+    # Check if the default user exists, creating one if not
     default_user = User.query.filter_by(username='guest').first()
     if not default_user:
         default_user = User(username='guest', password_hash='guest_password')  # Use a hash for production!
         db.session.add(default_user)
         db.session.commit()
 
+# rendering the template from index.html
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Set up logging
+# set up logging
 logging.basicConfig(level=logging.DEBUG)
 
+# API routing for GET and POST methods, see static/js/main.js for the scripts
+# GET method sends list of tasks to static/js/main.js, POST method receives list of tasks from static/js/main.js
 @app.route('/api/tasks', methods=['GET', 'POST'])
 def handle_tasks():
     if request.method == 'GET':
@@ -68,7 +73,7 @@ def handle_tasks():
         if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
             return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
 
-        # Create a new Task instance with user_id set to None
+        # Create a new Task instance with user_id set to default user
         new_task = Task(
             content=content,
             location=location if location else None,
@@ -91,10 +96,12 @@ def handle_tasks():
             logging.error(f"Error adding task: {e}")
             return jsonify({"error": "An error occurred while adding the task."}), 500
 
+# these methods haven't been implemented yet in javascript, but they will be necessary for modifying task data
 @app.route('/api/tasks/<int:task_id>', methods=['PUT', 'PATCH', 'DELETE'])
 def modify_task(task_id):
     task = Task.query.get_or_404(task_id)
     
+    # modifying a task
     if request.method in ['PUT', 'PATCH']:
         data = request.get_json()
         if not data:
@@ -146,6 +153,7 @@ def modify_task(task_id):
             db.session.rollback()
             return jsonify({"error": "An error occurred while updating the task."}), 500
     
+    # deleting a task
     elif request.method == 'DELETE':
         try:
             db.session.delete(task)
@@ -155,6 +163,6 @@ def modify_task(task_id):
             db.session.rollback()
             return jsonify({"error": "An error occurred while deleting the task."}), 500
 
+# running the app, with debugger on
 if __name__ == '__main__':
     app.run(debug=True)
-
