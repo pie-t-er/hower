@@ -1,9 +1,9 @@
 # Hower
 A time management system that improves upon the ability to manage and keep track of time. Hower enables users to put the power back in how they get things done. Life should be lived doing, rather than planning.
 
-## Running app:
+Check the requirements.txt file to make sure you have all necessary dependencies before running the app.
 
-To run the app, check the requirements.txt file to make sure you have all necessary dependencies.
+## To Run the Flask Backend Server in a Browser:
 
 In the terminal, navigate to the repository, and run:
 
@@ -11,4 +11,14 @@ In the terminal, navigate to the repository, and run:
 python app.py
 ```
 
-It should provide a port for you to access the app on your browser.
+It should provide an address for you to access the app on your browser, paste that address into your browser (preferably Chrome) and run as a basic html/css website.
+
+## To Run the Electron Frontend Application:
+
+In the terminal, navigate to the repository, and run:
+
+```
+npm start
+```
+
+The application should open in a new window.
