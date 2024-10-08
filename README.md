@@ -7,8 +7,8 @@ To run the app, check the requirements.txt file to make sure you have all necess
 
 In the terminal, navigate to the repository, and run:
 
-'''
+```
 python app.py
-'''
+```
 
 It should provide a port for you to access the app on your browser.
