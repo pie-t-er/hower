@@ -67,6 +67,9 @@ function addTask() {
   const dueTimeInput = document.getElementById('taskDueTime');
   const due_time = dueTimeInput.value; // Format: 'HH:MM'
 
+  const priorityInput = document.getElementById('taskPriority');
+  const priority = priorityInput.value;
+
   const colorInput = document.getElementById('taskColor');
   const color = colorInput.value; // Format: '#FFFFFF'
 
@@ -84,6 +87,7 @@ function addTask() {
               location: location || null,
               due_date: due_date || null,
               due_time: due_time || null,
+              priority: priority || null,
               color: color || null
               // If you're handling user authentication, include user_id here
           }),
@@ -104,6 +108,7 @@ function addTask() {
           locationInput.value = '';
           dueDateInput.value = '';
           dueTimeInput.value = '';
+          priorityInput.value = '';
           colorInput.value = '#4CAF50'; // Reset to default color
           loadTasks();
       })

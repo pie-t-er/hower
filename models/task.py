@@ -7,6 +7,7 @@ class Task(db.Model):
     location = db.Column(db.String(200), nullable=True)
     due_date = db.Column(db.Date, nullable=True)
     due_time = db.Column(db.Time, nullable=True)
+    priority = db.Column(db.Integer, nullable=True)
     color = db.Column(db.String(7), nullable=True)  # Assuming you store color as HEX
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Change nullable to False when adding user authentication
 

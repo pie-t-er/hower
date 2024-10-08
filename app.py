@@ -51,6 +51,7 @@ def handle_tasks():
         location = data.get('location')
         due_date_str = data.get('due_date')
         due_time_str = data.get('due_time')
+        priority = data.get('priority')
         color = data.get('color')
 
         # Validate and parse due_date
@@ -79,6 +80,7 @@ def handle_tasks():
             location=location if location else None,
             due_date=due_date,
             due_time=due_time,
+            priority=priority if priority else None,
             color=color if color else None,
             user_id=default_user.id  # Bypass user authentication, update later!!
         )
@@ -133,6 +135,9 @@ def modify_task(task_id):
                     return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
             else:
                 task.due_time = None
+
+        if 'priority' in data:
+            priority = data['priority'] if data['priority'] else None
         
         if 'color' in data:
             color = data['color']
