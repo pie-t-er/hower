@@ -1,0 +1,160 @@
+# libraries
+from flask import Flask, render_template, request, jsonify
+from datetime import datetime
+import logging
+
+# files:
+from models.user import User
+from models.task import Task
+from models.event import Event
+from models.extensions import db
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'  # Single database file
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+    # Check if the default user exists
+    default_user = User.query.filter_by(username='guest').first()
+    if not default_user:
+        default_user = User(username='guest', password_hash='guest_password')  # Use a hash for production!
+        db.session.add(default_user)
+        db.session.commit()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+
+@app.route('/api/tasks', methods=['GET', 'POST'])
+def handle_tasks():
+    if request.method == 'GET':
+        tasks = Task.query.all()
+        return jsonify([task.to_dict() for task in tasks])
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        if not data or 'task' not in data:
+            return jsonify({"error": "Invalid task data"}), 400
+        
+        content = data.get('task').strip()
+        location = data.get('location')
+        due_date_str = data.get('due_date')
+        due_time_str = data.get('due_time')
+        color = data.get('color')
+
+        # Validate and parse due_date
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({"error": "Invalid due_date format. Use YYYY-MM-DD."}), 400
+
+        # Validate and parse due_time
+        due_time = None
+        if due_time_str:
+            try:
+                due_time = datetime.strptime(due_time_str, '%H:%M').time()
+            except ValueError:
+                return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
+
+        # Optional: Validate color
+        if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
+            return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
+
+        # Create a new Task instance with user_id set to None
+        new_task = Task(
+            content=content,
+            location=location if location else None,
+            due_date=due_date,
+            due_time=due_time,
+            color=color if color else None,
+            user_id=default_user.id  # Bypass user authentication, update later!!
+        )
+
+        # Add and commit to the database
+        try:
+            db.session.add(new_task)
+            db.session.commit()
+            return jsonify({
+                "message": "Task added successfully",
+                "task": new_task.to_dict()
+            }), 201
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error adding task: {e}")
+            return jsonify({"error": "An error occurred while adding the task."}), 500
+
+@app.route('/api/tasks/<int:task_id>', methods=['PUT', 'PATCH', 'DELETE'])
+def modify_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    if request.method in ['PUT', 'PATCH']:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        # Update fields if they exist in the request
+        if 'task' in data:
+            task.content = data['task'].strip()
+        
+        if 'location' in data:
+            task.location = data['location'] if data['location'] else None
+        
+        if 'due_date' in data:
+            due_date_str = data['due_date']
+            if due_date_str:
+                try:
+                    task.due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    return jsonify({"error": "Invalid due_date format. Use YYYY-MM-DD."}), 400
+            else:
+                task.due_date = None
+        
+        if 'due_time' in data:
+            due_time_str = data['due_time']
+            if due_time_str:
+                try:
+                    task.due_time = datetime.strptime(due_time_str, '%H:%M').time()
+                except ValueError:
+                    return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
+            else:
+                task.due_time = None
+        
+        if 'color' in data:
+            color = data['color']
+            if color:
+                if not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]:
+                    return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
+                task.color = color
+            else:
+                task.color = None
+
+        try:
+            db.session.commit()
+            return jsonify({
+                "message": "Task updated successfully",
+                "task": task.to_dict()
+            }), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": "An error occurred while updating the task."}), 500
+    
+    elif request.method == 'DELETE':
+        try:
+            db.session.delete(task)
+            db.session.commit()
+            return jsonify({"message": "Task deleted successfully"}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": "An error occurred while deleting the task."}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
