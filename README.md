@@ -1,5 +1,5 @@
-# hower
-A time management system that improves upon the ability to manage and keep track of time.
+# Hower
+A time management system that improves upon the ability to manage and keep track of time. Hower enables users to put the power back in how they get things done. Life should be lived doing, rather than planning.
 
 ## Running app:
 
