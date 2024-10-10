@@ -39,7 +39,7 @@ logging.basicConfig(level=logging.DEBUG)
 @app.route('/api/tasks', methods=['GET', 'POST'])
 def handle_tasks():
     if request.method == 'GET':
-        tasks = Task.query.all()
+        tasks = Task.query.order_by(Task.priority.desc()).all()
         return jsonify([task.to_dict() for task in tasks])
     
     elif request.method == 'POST':
