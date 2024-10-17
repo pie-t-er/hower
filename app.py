@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 import logging
+from sqlalchemy import nullslast
 
 # files:
 from models.user import User
@@ -39,7 +40,7 @@ logging.basicConfig(level=logging.DEBUG)
 @app.route('/api/tasks', methods=['GET', 'POST'])
 def handle_tasks():
     if request.method == 'GET':
-        tasks = Task.query.order_by(Task.priority.desc()).all()
+        tasks = Task.query.order_by(Task.priority.desc(), nullslast(Task.due_date.asc()), nullslast(Task.due_time.asc()), Task.id.asc()).all()
         return jsonify([task.to_dict() for task in tasks])
     
     elif request.method == 'POST':

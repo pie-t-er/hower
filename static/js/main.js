@@ -16,6 +16,12 @@ function loadTasks() {
               contentP.textContent = `Task: ${task.content}`;
               detailsDiv.appendChild(contentP);
 
+              if (task.priority) {
+                const prior = document.createElement('p');
+                prior.textContent = `Priority: ${task.priority}`;
+                detailsDiv.appendChild(prior);
+              }
+
               // Location (if exists)
               if (task.location) {
                   const locationP = document.createElement('p');
@@ -25,16 +31,16 @@ function loadTasks() {
 
               // Due Date and Time (if exists)
               if (task.due_date || task.due_time) {
-                  const dueP = document.createElement('p');
-                  let dueText = 'Due: ';
-                  if (task.due_date) {
-                      dueText += `${task.due_date}`;
-                  }
-                  if (task.due_time) {
-                      dueText += ` at ${task.due_time}`;
-                  }
-                  dueP.textContent = dueText;
-                  detailsDiv.appendChild(dueP);
+                const dueP = document.createElement('p');
+                let dueText = 'Due: ';
+                if (task.due_date) {
+                    dueText += `${task.due_date}`;
+                }
+                if (task.due_time) {
+                    dueText += ` at ${task.due_time}`;
+                }
+                dueP.textContent = dueText;
+                detailsDiv.appendChild(dueP);
               }
 
               li.appendChild(detailsDiv);
@@ -87,7 +93,7 @@ function addTask() {
               location: location || null,
               due_date: due_date || null,
               due_time: due_time || null,
-              priority: priority || null,
+              priority: priority || 5,
               color: color || null
               // If you're handling user authentication, include user_id here
           }),
