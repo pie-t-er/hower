@@ -1,7 +1,7 @@
 # Hower
 A time management system that improves upon the ability to manage and keep track of time. Hower enables users to put the power back in how they get things done. Life should be lived doing, rather than planning.
 
-Check the requirements.txt file to make sure you have all necessary dependencies before running the app.
+Check the requirements.txt file to make sure you have all necessary dependencies installed before running the app.
 
 ## To Run the Flask Backend Server in a Browser:
 
