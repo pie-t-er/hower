@@ -127,5 +127,71 @@ function addTask() {
   }
 }
 
-// Load tasks when the page loads
-document.addEventListener('DOMContentLoaded', loadTasks);
+function addEvent() {
+    const eventInput = document.getElementById('eventInput');
+    const event = eventInput.value.trim();
+
+    const locationInput = document.getElementById('eventLocation');
+    const location = locationInput.value.trim();
+  
+    const dateInput = document.getElementById('eventDate');
+    const date = dateInput.value; // Format: 'YYYY-MM-DD'
+  
+    const timeInput = document.getElementById('eventTime');
+    const time = timeInput.value; // Format: 'HH:MM'
+  
+    const endInput = document.getElementById('eventEnd');
+    const end = endInput.value; // Format: 'HH:MM'
+  
+    const colorInput = document.getElementById('eventColor');
+    const color = colorInput.value; // Format: '#FFFFFF'
+  
+    console.log('Collected data');
+  
+    if (event) {
+        console.log(event);
+        fetch('/api/events', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                event: event,
+                location: location || null,
+                date: date || null,
+                time: time || null,
+                end: end || null,
+                color: color || null
+                // If you're handling user authentication, include user_id here
+            }),
+        })
+        .then(response => {
+            console.log(response);
+            if (!response.ok) {
+                console.log('uh oh');
+                console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task')
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data.message);
+            // Clear all input fields after successful addition
+            eventInput.value = '';
+            dateInput.value = '';
+            timeInput.value = '';
+            endInput.value = '';
+            colorInput.value = '#4CAF50'; // Reset to default color
+            loadTasks();
+        })
+        .catch(error => {
+            console.error('Error adding task:', error.error || error);
+            alert(error.error || 'An error occurred while adding the task.');
+        });
+    } //else {
+        //alert('Event description cannot be empty.');
+    //}
+  }
+  
+  // Load tasks when the page loads
+  document.addEventListener('DOMContentLoaded', loadTasks);
