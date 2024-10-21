@@ -1,5 +1,7 @@
 # libraries
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
+import os
+from ics import Calendar
 from datetime import datetime
 import logging
 from sqlalchemy import nullslast
@@ -14,8 +16,13 @@ from models.extensions import db
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'  # Single database file
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = 'uploads/' # folder for uploaded ics files
 # connecting the app to the database from models/extensions.py
 db.init_app(app)
+
+# Ensure the upload folder exists [file uploading for importing .ics files]
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 # initializing app context and creating the tables of the database
 with app.app_context():
@@ -312,6 +319,121 @@ def modify_event(event_id):
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": "An error occurred while deleting the event."}), 500
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return 'No file part'
+    file = request.files['file']
+    if file.filename == '':
+        return 'No selected file'
+    if file:
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(filepath)
+
+        # Parse the uploaded .ics file
+        with open(filepath, 'r') as ics_file:
+            calendar = Calendar(ics_file.read())
+            for event in calendar.events:
+                title = event.name.strip
+                location = event.location
+                date = event.begin
+                time = event.begin
+                end = event.end
+                descript = event.description.strip
+
+                # Validate and parse date
+                if date:
+                    try:
+                        date = datetime.strptime(date, '%Y-%m-%d').date()
+                    except ValueError:
+                        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+                # Validate and parse time
+                if time:
+                    try:
+                        time = datetime.strptime(time, '%H:%M').time()
+                    except ValueError:
+                        return jsonify({"error": "Invalid time format. Use HH:MM."}), 400
+
+                # Validate and parse end
+                if end:
+                    try:
+                        end = datetime.strptime(end, '%H:%M').time()
+                    except ValueError:
+                        return jsonify({"error": "Invalid end format. Use HH:MM."}), 400
+
+                # Create a new Task instance with user_id set to default user
+                new_event = Event(
+                    title=title,
+                    description=descript if descript else None,
+                    location=location if location else None,
+                    date=date,
+                    time=time if time else None,
+                    end=end if end else None,
+                    color=color if color else None,
+                    user_id=default_user.id  # Bypass user authentication, update later!!
+                )
+
+                # Add and commit to the database
+                try:
+                    db.session.add(new_event)
+                    db.session.commit()
+                    return jsonify({
+                        "message": "Event added successfully",
+                        "event": new_event.to_dict()
+                    }), 201
+                except Exception as e:
+                    db.session.rollback()
+                    logging.error(f"Error adding event: {e}")
+                    return jsonify({"error": "An error occurred while adding the event."}), 500
+
+            for todo in calendar.todo:
+                content = todo.name.strip
+                due_date_str = todo.due
+                due_time_str = todo.due
+
+                # Validate and parse due_date
+                due_date = None
+                if due_date_str:
+                    try:
+                        due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+                    except ValueError:
+                        return jsonify({"error": "Invalid due_date format. Use YYYY-MM-DD."}), 400
+
+                # Validate and parse due_time
+                due_time = None
+                if due_time_str:
+                    try:
+                        due_time = datetime.strptime(due_time_str, '%H:%M').time()
+                    except ValueError:
+                        return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
+                
+                # Create a new Task instance with user_id set to default user
+                new_task = Task(
+                    content=content,
+                    location=None,
+                    due_date=due_date,
+                    due_time=due_time,
+                    priority=5,
+                    color=None,
+                    user_id=default_user.id  # Bypass user authentication, update later!!
+                )
+
+                # Add and commit to the database
+                try:
+                    db.session.add(new_task)
+                    db.session.commit()
+                    return jsonify({
+                        "message": "Task added successfully",
+                        "task": new_task.to_dict()
+                    }), 201
+                except Exception as e:
+                    db.session.rollback()
+                    logging.error(f"Error adding task: {e}")
+                    return jsonify({"error": "An error occurred while adding the task."}), 500
+        
+        return 'File uploaded and processed successfully'
 
 # running the app, with debugger on
 if __name__ == '__main__':
