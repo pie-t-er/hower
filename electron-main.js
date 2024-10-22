@@ -26,23 +26,6 @@ function createWindow() {
         }
         app.quit();
     });
-
-    // Add focus event listeners
-    // mainWindow.on('focus', () => {
-    //     mainWindow.webContents.executeJavaScript(`
-    //         if (typeof resetFocusAndInputs === 'function') {
-    //             resetFocusAndInputs();
-    //         }
-    //     `);
-    // });
-
-    // mainWindow.on('blur', () => {
-    //     mainWindow.webContents.executeJavaScript(`
-    //         if (document.activeElement instanceof HTMLInputElement) {
-    //             document.activeElement.blur();
-    //         }
-    //     `);
-    // });
 }
 
 app.whenReady().then(() => {

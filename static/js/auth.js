@@ -2,31 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
 
-    // Function to make all input fields focusable
-    // function makeInputsFocusable() {
-    //     const inputs = document.querySelectorAll('input');
-    //     inputs.forEach(input => {
-    //         input.addEventListener('click', function(e) {
-    //             this.blur();
-    //             setTimeout(() => this.focus(), 0);
-    //         });
-    //     });
-    // }
-
-    // // Call this function when the page loads
-    // makeInputsFocusable();
-
-    // Function to reset focus and make inputs focusable again
-    // function resetFocusAndInputs() {
-    //     if (document.activeElement instanceof HTMLInputElement) {
-    //         document.activeElement.blur();
-    //     }
-    //     makeInputsFocusable();
-    // }
-
-    // Add this event listener to handle focus issues
-    // window.addEventListener('focus', resetFocusAndInputs);
-
     function displayCautionMessage(message, isVisible) {
         const cautionMessage = document.getElementById('cautionMessage');
         if (isVisible) {

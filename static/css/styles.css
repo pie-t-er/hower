@@ -1,70 +1,76 @@
 /* Stylesheet for /templates */
 body {
   font-family: Arial, sans-serif;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
   background-color: #f9f9f9;
 }
-h1 {
+
+/* Centering and styling the login/register container */
+.login-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 40px 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 25px rgba(0,0,0,0.1);
   text-align: center;
+}
+
+.login-container h1 {
+  margin-bottom: 30px;
   color: #333;
 }
-#taskForm {
+
+#loginForm, #registerForm {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  gap: 20px;
 }
-#taskForm input, #taskForm button {
-  padding: 10px;
+
+#loginForm input,
+#registerForm input {
+  padding: 12px 15px;
   font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
-#taskForm input[type="text"], 
-#taskForm input[type="date"],
-#taskForm input[type="time"],
-#taskForm input[type="color"] {
-  width: 100%;
-  box-sizing: border-box;
+
+#loginForm input:focus,
+#registerForm input:focus {
+  border-color: #4CAF50;
+  outline: none;
 }
-#taskForm button {
-  width: 100px;
-  align-self: flex-end;
+
+#loginForm button,
+#registerForm button {
+  padding: 12px 15px;
+  font-size: 18px;
   background-color: #4CAF50;
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 5px;
 }
-#taskForm button:hover {
+
+#loginForm button:hover,
+#registerForm button:hover {
   background-color: #45a049;
 }
-#taskList {
-  margin-top: 30px;
-  list-style-type: none;
-  padding: 0;
+
+#cautionMessage {
+  display: block;
+  margin-top: 15px;
+  color: red;
 }
-#taskList li {
-  background-color: #fff;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-left: 5px solid #4CAF50;
-  border-radius: 3px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+
+.login-container p {
+  margin-top: 25px;
 }
-.task-details {
-  display: flex;
-  flex-direction: column;
+
+.login-container a {
+  color: #4CAF50;
+  text-decoration: none;
 }
-.task-details p {
-  margin: 2px 0;
-}
-.task-color {
-  font-size: 20px;
+
+.login-container a:hover {
+  text-decoration: underline;
 }
