@@ -1,131 +1,141 @@
-function loadTasks() {
-  fetch('/api/tasks')
-      .then(response => response.json())
-      .then(tasks => {
-          const taskList = document.getElementById('taskList');
-          taskList.innerHTML = '';
-          tasks.forEach(task => {
-              const li = document.createElement('li');
+    function loadTasks() {
+    fetch('/api/tasks')
+        .then(response => response.json())
+        .then(tasks => {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const li = document.createElement('li');
 
-              // Task Details Container
-              const detailsDiv = document.createElement('div');
-              detailsDiv.classList.add('task-details');
+                // Task Details Container
+                const detailsDiv = document.createElement('div');
+                detailsDiv.classList.add('task-details');
 
-              // Task Content
-              const contentP = document.createElement('p');
-              contentP.textContent = `Task: ${task.content}`;
-              detailsDiv.appendChild(contentP);
+                // Task Content
+                const contentP = document.createElement('p');
+                contentP.textContent = `Task: ${task.content}`;
+                detailsDiv.appendChild(contentP);
 
-              if (task.priority) {
-                const prior = document.createElement('p');
-                prior.textContent = `Priority: ${task.priority}`;
-                detailsDiv.appendChild(prior);
-              }
-
-              // Location (if exists)
-              if (task.location) {
-                  const locationP = document.createElement('p');
-                  locationP.textContent = `Location: ${task.location}`;
-                  detailsDiv.appendChild(locationP);
-              }
-
-              // Due Date and Time (if exists)
-              if (task.due_date || task.due_time) {
-                const dueP = document.createElement('p');
-                let dueText = 'Due: ';
-                if (task.due_date) {
-                    dueText += `${task.due_date}`;
+                if (task.priority) {
+                    const prior = document.createElement('p');
+                    prior.textContent = `Priority: ${task.priority}`;
+                    detailsDiv.appendChild(prior);
                 }
-                if (task.due_time) {
-                    dueText += ` at ${task.due_time}`;
+
+                // Location (if exists)
+                if (task.location) {
+                    const locationP = document.createElement('p');
+                    locationP.textContent = `Location: ${task.location}`;
+                    detailsDiv.appendChild(locationP);
                 }
-                dueP.textContent = dueText;
-                detailsDiv.appendChild(dueP);
-              }
 
-              li.appendChild(detailsDiv);
+                // Due Date and Time (if exists)
+                if (task.due_date || task.due_time) {
+                    const dueP = document.createElement('p');
+                    let dueText = 'Due: ';
+                    if (task.due_date) {
+                        dueText += `${task.due_date}`;
+                    }
+                    if (task.due_time) {
+                        dueText += ` at ${task.due_time}`;
+                    }
+                    dueP.textContent = dueText;
+                    detailsDiv.appendChild(dueP);
+                }
 
-              // Task Color (if exists)
-              if (task.color) {
-                  const colorSpan = document.createElement('span');
-                  colorSpan.classList.add('task-color');
-                  colorSpan.textContent = '■'; // Colored square
-                  colorSpan.style.color = task.color;
-                  li.appendChild(colorSpan);
-              }
+                li.appendChild(detailsDiv);
 
-              taskList.appendChild(li);
-          });
-      })
-      .catch(error => console.error('Error loading tasks:', error));
-}
+                // Task Color (if exists)
+                if (task.color) {
+                    const colorSpan = document.createElement('span');
+                    colorSpan.classList.add('task-color');
+                    colorSpan.textContent = '■'; // Colored square
+                    colorSpan.style.color = task.color;
+                
+                    // Set the left border color of the task to match the task color
+                    li.style.borderLeftColor = task.color;
+                
+                    li.appendChild(colorSpan);
+                }
 
-function addTask() {
-  const taskInput = document.getElementById('taskInput');
-  const task = taskInput.value.trim();
+                taskList.appendChild(li);
+            });
+        })
+        .catch(error => console.error('Error loading tasks:', error));
+    }
 
-  const locationInput = document.getElementById('taskLocation');
-  const location = locationInput.value.trim();
+    // Update the displayed value of the priority slider
+    function updatePriorityValue(value) {
+        document.getElementById('priorityValue').textContent = value;
+    }
 
-  const dueDateInput = document.getElementById('taskDueDate');
-  const due_date = dueDateInput.value; // Format: 'YYYY-MM-DD'
 
-  const dueTimeInput = document.getElementById('taskDueTime');
-  const due_time = dueTimeInput.value; // Format: 'HH:MM'
+    function addTask() {
+    const taskInput = document.getElementById('taskInput');
+    const task = taskInput.value.trim();
 
-  const priorityInput = document.getElementById('taskPriority');
-  const priority = priorityInput.value;
+    const locationInput = document.getElementById('taskLocation');
+    const location = locationInput.value.trim();
 
-  const colorInput = document.getElementById('taskColor');
-  const color = colorInput.value; // Format: '#FFFFFF'
+    const dueDateInput = document.getElementById('taskDueDate');
+    const due_date = dueDateInput.value; // Format: 'YYYY-MM-DD'
 
-  console.log('Collected data');
+    const dueTimeInput = document.getElementById('taskDueTime');
+    const due_time = dueTimeInput.value; // Format: 'HH:MM'
 
-  if (task) {
-      console.log(task);
-      fetch('/api/tasks', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-              task: task,
-              location: location || null,
-              due_date: due_date || null,
-              due_time: due_time || null,
-              priority: priority || 5,
-              color: color || null
-              // If you're handling user authentication, include user_id here
-          }),
-      })
-      .then(response => {
-          console.log(response);
-          if (!response.ok) {
-              console.log('uh oh');
-              console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task')
-              return response.json().then(err => { throw err; });
-          }
-          return response.json();
-      })
-      .then(data => {
-          console.log(data.message);
-          // Clear all input fields after successful addition
-          taskInput.value = '';
-          locationInput.value = '';
-          dueDateInput.value = '';
-          dueTimeInput.value = '';
-          priorityInput.value = '';
-          colorInput.value = '#4CAF50'; // Reset to default color
-          loadTasks();
-      })
-      .catch(error => {
-          console.error('Error adding task:', error.error || error);
-          alert(error.error || 'An error occurred while adding the task.');
-      });
-  } else {
-      alert('Task description cannot be empty.');
-  }
-}
+    const priorityInput = document.getElementById('taskPriority');
+    const priority = priorityInput.value;
 
-// Load tasks when the page loads
-document.addEventListener('DOMContentLoaded', loadTasks);
+    const colorInput = document.getElementById('taskColor');
+    const color = colorInput.value; // Format: '#FFFFFF'
+
+    console.log('Collected data');
+
+    if (task) {
+        console.log(task);
+        fetch('/api/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                task: task,
+                location: location || null,
+                due_date: due_date || null,
+                due_time: due_time || null,
+                priority: priority || 5,
+                color: color || null
+                // If you're handling user authentication, include user_id here
+            }),
+        })
+        .then(response => {
+            console.log(response);
+            if (!response.ok) {
+                console.log('uh oh');
+                console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task')
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data.message);
+            // Clear all input fields after successful addition
+            taskInput.value = '';
+            locationInput.value = '';
+            dueDateInput.value = '';
+            dueTimeInput.value = '';
+            priorityInput.value = '';
+            colorInput.value = '#4CAF50'; // Reset to default color
+            loadTasks();
+        })
+        .catch(error => {
+            console.error('Error adding task:', error.error || error);
+            alert(error.error || 'An error occurred while adding the task.');
+        });
+    } else {
+        alert('Task description cannot be empty.');
+    }
+    }
+
+    // Load tasks when the page loads
+    document.addEventListener('DOMContentLoaded', loadTasks);
