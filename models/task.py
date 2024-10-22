@@ -18,6 +18,7 @@ class Task(db.Model):
             'location': self.location,
             'due_date': str(self.due_date) if self.due_date else None,
             'due_time': str(self.due_time) if self.due_time else None,
+            'priority': self.priority,
             'color': self.color,
             'user_id': self.user_id  # Optional: return user_id
         }

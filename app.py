@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 from datetime import datetime
 import logging
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import nullslast
+
 
 from models.user import User
 from models.task import Task
@@ -65,7 +67,7 @@ def handle_tasks():
         return jsonify({"error": "Unauthorized"}), 401
     
     if request.method == 'GET':
-        tasks = Task.query.filter_by(user_id=session['user_id']).order_by(Task.priority.desc()).all()
+        tasks = Task.query.order_by(Task.priority.desc(), nullslast(Task.due_date.asc()), nullslast(Task.due_time.asc()), Task.id.asc()).all()
         return jsonify([task.to_dict() for task in tasks])
     
     elif request.method == 'POST':
