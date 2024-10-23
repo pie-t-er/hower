@@ -140,8 +140,11 @@ function addEvent() {
     const timeInput = document.getElementById('eventTime');
     const time = timeInput.value; // Format: 'HH:MM'
   
-    const endInput = document.getElementById('eventEnd');
-    const end = endInput.value; // Format: 'HH:MM'
+    const endDateInput = document.getElementById('endDate');
+    const endDate = endDateInput.value; // Format: 'YYYY-MM-DD'
+
+    const endTimeInput = document.getElementById('endTime');
+    const endTime = endTimeInput.value; // Format: 'HH:MM'
   
     const colorInput = document.getElementById('eventColor');
     const color = colorInput.value; // Format: '#FFFFFF'
@@ -160,7 +163,8 @@ function addEvent() {
                 location: location || null,
                 date: date || null,
                 time: time || null,
-                end: end || null,
+                eDate: endTime || null,
+                eTime: endDate || null,
                 color: color || null
                 // If you're handling user authentication, include user_id here
             }),
@@ -180,17 +184,16 @@ function addEvent() {
             eventInput.value = '';
             dateInput.value = '';
             timeInput.value = '';
-            endInput.value = '';
+            endDateInput.value = '';
+            endTimeInput.value = '';
             colorInput.value = '#4CAF50'; // Reset to default color
-            loadTasks();
+            // loadEvents();
         })
         .catch(error => {
             console.error('Error adding task:', error.error || error);
             alert(error.error || 'An error occurred while adding the task.');
         });
-    } //else {
-        //alert('Event description cannot be empty.');
-    //}
+    }
   }
   
   // Load tasks when the page loads
