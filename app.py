@@ -1,21 +1,22 @@
+
 # libraries
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
 import os
 from ics import Calendar, Event as IcsEvent, Todo as IcsTask
+
 from datetime import datetime
 import logging
+from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import nullslast
-
-# files:
+from models.event import Event
 from models.user import User
 from models.task import Task
-from models.event import Event
 from models.extensions import db
 
-# initializing the app and SQLAlchemy
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'  # Single database file
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'your_secret_key_here'  # Use a random secret key for sessions
 app.config['UPLOAD_FOLDER'] = 'uploads/' # folder for uploaded ics files
 # connecting the app to the database from models/extensions.py
 db.init_app(app)
@@ -24,37 +25,91 @@ db.init_app(app)
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+
 # initializing app context and creating the tables of the database
 with app.app_context():
     db.create_all()
-    # Check if the default user exists, creating one if not
-    default_user = User.query.filter_by(username='guest').first()
-    if not default_user:
-        default_user = User(username='guest', password_hash='guest_password')  # Use a hash for production!
-        db.session.add(default_user)
-        db.session.commit()
 
-# rendering the template from index.html
+# Route to render the main task manager if the user is logged in
 @app.route('/')
 def index():
-    return render_template('index.html')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('index.html', username=session['username'])
 
-# set up logging
-logging.basicConfig(level=logging.DEBUG)
+# Route to render the login page
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
-# API routing for GET and POST methods, see static/js/main.js for the scripts
-# GET method sends list of tasks to static/js/main.js, POST method receives list of tasks from static/js/main.js
+# Route to render the registration page
+@app.route('/register')
+def register():
+    return render_template('register.html')
+
+# API login route
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json()
+    user = User.query.filter_by(username=data['username']).first()
+
+    # Check if the user exists and the password is correct
+    if user and check_password_hash(user.password_hash, data['password']):
+        session['user_id'] = user.id
+        session['username'] = user.username  # Store username in the session
+        return jsonify({"message": "Login successful"}), 200
+
+    return jsonify({"error": "Invalid username or password"}), 401
+
+# API register route
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    data = request.get_json()
+    existing_user = User.query.filter_by(username=data['username']).first()
+
+    if existing_user:
+        return jsonify({"error": "Username already exists"}), 400
+
+    # Hash the password before storing it
+    new_user = User(username=data['username'], password_hash=generate_password_hash(data['password']))
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"message": "Registration successful"}), 201
+
+# API logout route
+@app.route('/api/logout')
+def logout():
+    session.clear()  # Clear all session data
+    return redirect(url_for('login'))
+
+# API route for handling tasks
 @app.route('/api/tasks', methods=['GET', 'POST'])
 def handle_tasks():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session['user_id']
+
     if request.method == 'GET':
-        tasks = Task.query.order_by(Task.priority.desc(), nullslast(Task.due_date.asc()), nullslast(Task.due_time.asc()), Task.id.asc()).all()
-        return jsonify([task.to_dict() for task in tasks])
-    
+        # Fetch tasks only for the logged-in user
+        tasks = Task.query.filter_by(user_id=user_id).order_by(
+            Task.priority.desc(),
+            nullslast(Task.due_date.asc()),
+            nullslast(Task.due_time.asc()),
+            Task.id.asc()
+        ).all()
+
+        return jsonify([task.to_dict() for task in tasks]), 200
+
     elif request.method == 'POST':
         data = request.get_json()
+
+        # Validate task content
         if not data or 'task' not in data:
             return jsonify({"error": "Invalid task data"}), 400
-        
+
         content = data.get('task').strip()
         location = data.get('location')
         due_date_str = data.get('due_date')
@@ -62,27 +117,24 @@ def handle_tasks():
         priority = data.get('priority')
         color = data.get('color')
 
-        # Validate and parse due_date
-        due_date = None
+        # Parse and validate the due date and time
+        due_date, due_time = None, None
         if due_date_str:
             try:
                 due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
             except ValueError:
                 return jsonify({"error": "Invalid due_date format. Use YYYY-MM-DD."}), 400
 
-        # Validate and parse due_time
-        due_time = None
         if due_time_str:
             try:
                 due_time = datetime.strptime(due_time_str, '%H:%M').time()
             except ValueError:
                 return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
 
-        # Optional: Validate color
+        # Validate color (optional)
         if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
             return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
 
-        # Create a new Task instance with user_id set to default user
         new_task = Task(
             content=content,
             location=location if location else None,
@@ -90,10 +142,9 @@ def handle_tasks():
             due_time=due_time,
             priority=priority if priority else None,
             color=color if color else None,
-            user_id=default_user.id  # Bypass user authentication, update later!!
+            user_id=user_id  # Associate the task with the logged-in user
         )
 
-        # Add and commit to the database
         try:
             db.session.add(new_task)
             db.session.commit()
@@ -106,24 +157,26 @@ def handle_tasks():
             logging.error(f"Error adding task: {e}")
             return jsonify({"error": "An error occurred while adding the task."}), 500
 
-# these methods haven't been implemented yet in javascript, but they will be necessary for modifying task data
+# API route to modify or delete tasks
 @app.route('/api/tasks/<int:task_id>', methods=['PUT', 'PATCH', 'DELETE'])
 def modify_task(task_id):
-    task = Task.query.get_or_404(task_id)
-    
-    # modifying a task
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session['user_id']
+    task = Task.query.filter_by(id=task_id, user_id=user_id).first()
+
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+
     if request.method in ['PUT', 'PATCH']:
         data = request.get_json()
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
 
-        # Update fields if they exist in the request
+        # Update task fields if provided in the request
         if 'task' in data:
             task.content = data['task'].strip()
-        
         if 'location' in data:
             task.location = data['location'] if data['location'] else None
-        
         if 'due_date' in data:
             due_date_str = data['due_date']
             if due_date_str:
@@ -133,7 +186,6 @@ def modify_task(task_id):
                     return jsonify({"error": "Invalid due_date format. Use YYYY-MM-DD."}), 400
             else:
                 task.due_date = None
-        
         if 'due_time' in data:
             due_time_str = data['due_time']
             if due_time_str:
@@ -143,30 +195,22 @@ def modify_task(task_id):
                     return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
             else:
                 task.due_time = None
-
         if 'priority' in data:
-            priority = data['priority'] if data['priority'] else None
-        
+            task.priority = data['priority'] if data['priority'] else None
         if 'color' in data:
             color = data['color']
-            if color:
-                if not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]:
-                    return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
-                task.color = color
-            else:
-                task.color = None
+            if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
+                return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
+            task.color = color
 
         try:
             db.session.commit()
-            return jsonify({
-                "message": "Task updated successfully",
-                "task": task.to_dict()
-            }), 200
+            return jsonify({"message": "Task updated successfully", "task": task.to_dict()}), 200
         except Exception as e:
             db.session.rollback()
+            logging.error(f"Error updating task: {e}")
             return jsonify({"error": "An error occurred while updating the task."}), 500
-    
-    # deleting a task
+
     elif request.method == 'DELETE':
         try:
             db.session.delete(task)
@@ -174,7 +218,9 @@ def modify_task(task_id):
             return jsonify({"message": "Task deleted successfully"}), 200
         except Exception as e:
             db.session.rollback()
+            logging.error(f"Error deleting task: {e}")
             return jsonify({"error": "An error occurred while deleting the task."}), 500
+
 
 @app.route('/api/events', methods=['GET', 'POST'])
 def handle_events():
