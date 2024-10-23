@@ -20,6 +20,6 @@ class Event(db.Model):
             'description': self.description,
             'date': self.event_date.isoformat(),
             'time': self.event_time.isoformat() if self.event_time else None,
-            'end': seld.end_time.isoformat() if self.event_time else None,
+            'end': self.end_time.isoformat() if self.event_time else None,
             'user_id': self.user_id
         }

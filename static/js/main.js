@@ -1,4 +1,4 @@
-function loadTasks() {
+    function loadTasks() {
   fetch('/api/tasks')
       .then(response => response.json())
       .then(tasks => {

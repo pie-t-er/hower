@@ -1,25 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Task Manager</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
-    <h1>Task Manager</h1>
-    <form id="taskForm" onsubmit="addTask(); return false;">
-        <input type="text" id="taskInput" placeholder="Enter a new task" required>
-        <input type="text" id="taskLocation" placeholder="Location (optional)">
-        <input type="date" id="taskDueDate">
-        <input type="time" id="taskDueTime">
-        <input type="number" id="taskPriority" placeholder="Priority on scale of 1-10 (optional)" min="1" max="10">
-        <label for="taskColor">Choose Color:</label>
-        <input type="color" id="taskColor" value="#4CAF50">
-        <button type="submit">Add Task</button>
-    </form>
-    <ul id="taskList"></ul>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="top-bar">
+        <h1 class="welcome">Welcome, {{ session['username'] }}!</h1>
+        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+    </div>
+    
+    <div class="task-manager-container">
+      <h1>Task Manager</h1>
+      <form id="taskForm" onsubmit="addTask(); return false;">
+        <!-- Form Row 1 -->
+        <div class="form-row">
+          <input
+            type="text"
+            id="taskInput"
+            placeholder="Enter a new task"
+            required
+          />
+          <input
+            type="text"
+            id="taskLocation"
+            placeholder="Location (optional)"
+          />
+          <input type="date" id="taskDueDate" />
+          <input type="time" id="taskDueTime" />
+        </div>
+        <!-- Form Row 2 -->
+        <div class="form-row">
+          <div class="slider-container">
+            <label for="taskPriority">Priority:</label>
+            <input
+              type="range"
+              id="taskPriority"
+              min="1"
+              max="10"
+              value="5"
+              oninput="updatePriorityValue(this.value)"
+            />
+            <span id="priorityValue">5</span>
+            <!-- Display the current value of the slider -->
+          </div>
+          <div class="color-container">
+            <label for="taskColor" class="color-label">Choose Color:</label>
+            <input type="color" id="taskColor" value="#4CAF50" />
+          </div>
+          <button type="submit">Add Task</button>
+        </div>
+      </form>
+      <ul id="taskList"></ul>
+    </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
+  </body>
 </html>
