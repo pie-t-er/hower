@@ -1,6 +1,6 @@
 
 # libraries
-from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session
 import os
 from ics import Calendar, Event as IcsEvent, Todo as IcsTask
 
@@ -224,6 +224,11 @@ def modify_task(task_id):
 
 @app.route('/api/events', methods=['GET', 'POST'])
 def handle_events():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session['user_id']
+
     if request.method == 'GET':
         events = Event.query.order_by(Event.event_date.asc(), Event.event_time.asc(), Event.id.asc()).all()
         return jsonify([event.to_dict() for event in events])
@@ -266,7 +271,7 @@ def handle_events():
         if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
             return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
 
-        # Create a new Task instance with user_id set to default user
+        # Create a new Task instance
         new_event = Event(
             title=title,
             location=location if location else None,
@@ -274,7 +279,7 @@ def handle_events():
             time=time if time else None,
             end=end if end else None,
             color=color if color else None,
-            user_id=default_user.id  # Bypass user authentication, update later!!
+            user_id=user_id
         )
 
         # Add and commit to the database
@@ -293,7 +298,14 @@ def handle_events():
 # these methods haven't been implemented yet in javascript, but they will be necessary for modifying event data
 @app.route('/api/events/<int:event_id>', methods=['PUT', 'PATCH', 'DELETE'])
 def modify_event(event_id):
-    event = Event.query.get_or_404(event_id)
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    user_id = session['user_id']
+    event = Event.query.filter_by(id=event_id, user_id=user_id).first()
+
+    if not event:
+        return jsonify({"error": "Event not found"}), 404
     
     # modifying a task
     if request.method in ['PUT', 'PATCH']:
@@ -379,6 +391,11 @@ def modify_event(event_id):
 
 @app.route('/upload', methods=['POST'])
 def ics_import():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session['user_id']
+
     if 'file' not in request.files:
         return 'No file part'
     file = request.files['file']
@@ -428,7 +445,7 @@ def ics_import():
                     except ValueError:
                         return jsonify({"error": "Invalid end time format. Use HH:MM."}), 400
 
-                # Create a new Task instance with user_id set to default user
+                # Create a new Task instance
                 new_event = Event(
                     title=title,
                     description=descript if descript else None,
@@ -438,7 +455,7 @@ def ics_import():
                     end_date=eDate if eDate else None,
                     end_time=eTime if eTime else None,
                     color=color if color else None,
-                    user_id=default_user.id  # Bypass user authentication, update later!!
+                    id=user_id
                 )
 
                 # Add and commit to the database
@@ -454,7 +471,7 @@ def ics_import():
                     logging.error(f"Error adding event: {e}")
                     return jsonify({"error": "An error occurred while adding the event."}), 500
 
-            for todo in calendar.todo:
+            for todo in calendar.todos:
                 content = todo.name.strip
                 due_date_str = todo.due
                 due_time_str = todo.due
@@ -475,15 +492,15 @@ def ics_import():
                     except ValueError:
                         return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
                 
-                # Create a new Task instance with user_id set to default user
+                # Create a new Task instance
                 new_task = Task(
                     content=content,
                     location=None,
-                    due_date=due_date,
-                    due_time=due_time,
+                    due_date=due_date if due_date else None,
+                    due_time=due_time if due_time else None,
                     priority=5,
                     color=None,
-                    user_id=default_user.id  # Bypass user authentication, update later!!
+                    user_id=user_id
                 )
 
                 # Add and commit to the database
@@ -504,10 +521,24 @@ def ics_import():
 
 @app.route('/download', methods=['GET'])
 def ics_export():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session['user_id']
     calendar = Calendar()
 
-    events = Event.query.order_by(Event.event_date.asc(), Event.event_time.asc(), Event.id.asc()).all()
-    tasks = Task.query.order_by(Task.priority.desc(), nullslast(Task.due_date.asc()), nullslast(Task.due_time.asc()), Task.id.asc()).all()
+    events = Event.query.filter_by(user_id=user_id).order_by(
+            Event.event_date.asc(), 
+            Event.event_time.asc(), 
+            Event.id.asc()
+        ).all()
+
+    tasks = Task.query.filter_by(user_id=user_id).order_by(
+            Task.priority.desc(),
+            nullslast(Task.due_date.asc()),
+            nullslast(Task.due_time.asc()),
+            Task.id.asc()
+        ).all()
 
     for db_task in tasks:
         task = IcsTask()
