@@ -1,7 +1,7 @@
 # libraries
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
 import os
-from ics import Calendar
+from ics import Calendar, Event as IcsEvent, Todo as IcsTask
 from datetime import datetime
 import logging
 from sqlalchemy import nullslast
@@ -191,7 +191,8 @@ def handle_events():
         location = data.get('location')
         date = data.get('date')
         time = data.get('time')
-        end = data.get('end')
+        endDate = data.get('eDate')
+        endTime = data.get('eTime')
         color = data.get('color')
 
         # Validate and parse date
@@ -281,15 +282,25 @@ def modify_event(event_id):
             else:
                 event.time = None
 
-        if 'end' in data:
-            end = data['end']
+        if 'eDate' in data:
+            date = data['eDate']
+            if date:
+                try:
+                    event.end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+                except ValueError:
+                    return jsonify({"error": "Invalid end date format. Use YYYY-MM-DD."}), 400
+            else:
+                event.end_date = None
+
+        if 'eTime' in data:
+            end = data['eTime']
             if end:
                 try:
-                    event.end = datetime.strptime(end, '%H:%M').time()
+                    event.end_time = datetime.strptime(end, '%H:%M').time()
                 except ValueError:
-                    return jsonify({"error": "Invalid end format. Use HH:MM."}), 400
+                    return jsonify({"error": "Invalid end time format. Use HH:MM."}), 400
             else:
-                event.end = None
+                event.end_time = None
         
         if 'color' in data:
             color = data['color']
@@ -339,7 +350,8 @@ def ics_import():
                 location = event.location
                 date = event.begin
                 time = event.begin
-                end = event.end
+                eTime = event.end
+                eDate = event.end
                 descript = event.description.strip
 
                 # Validate and parse date
@@ -356,12 +368,19 @@ def ics_import():
                     except ValueError:
                         return jsonify({"error": "Invalid time format. Use HH:MM."}), 400
 
-                # Validate and parse end
-                if end:
+                # Validate and parse end date
+                if eDate:
                     try:
-                        end = datetime.strptime(end, '%H:%M').time()
+                        eDate = datetime.strptime(eDate, '%Y-%m-%d').date()
                     except ValueError:
-                        return jsonify({"error": "Invalid end format. Use HH:MM."}), 400
+                        return jsonify({"error": "Invalid end date format. Use YYYY-MM-DD."}), 400
+
+                # Validate and parse end time
+                if eTime:
+                    try:
+                        eTime = datetime.strptime(eTime, '%H:%M').time()
+                    except ValueError:
+                        return jsonify({"error": "Invalid end time format. Use HH:MM."}), 400
 
                 # Create a new Task instance with user_id set to default user
                 new_event = Event(
@@ -370,7 +389,8 @@ def ics_import():
                     location=location if location else None,
                     date=date,
                     time=time if time else None,
-                    end=end if end else None,
+                    end_date=eDate if eDate else None,
+                    end_time=eTime if eTime else None,
                     color=color if color else None,
                     user_id=default_user.id  # Bypass user authentication, update later!!
                 )
@@ -434,6 +454,56 @@ def ics_import():
                     return jsonify({"error": "An error occurred while adding the task."}), 500
         
         return 'File uploaded and processed successfully'
+
+
+@app.route('/download', methods=['GET'])
+def ics_export():
+    calendar = Calendar()
+
+    events = Event.query.order_by(Event.event_date.asc(), Event.event_time.asc(), Event.id.asc()).all()
+    tasks = Task.query.order_by(Task.priority.desc(), nullslast(Task.due_date.asc()), nullslast(Task.due_time.asc()), Task.id.asc()).all()
+
+    for db_task in tasks:
+        task = IcsTask()
+        task.name = db_task.content
+        if db_task.due_date and db_task.due_time:
+            task.due = datetime.combine(db_task.due_date, db_task.due_time)
+        elif db_task.due_date:
+                task.due = db_task.due_date
+        else:
+            task.due = None
+        calendar.todos.add(task)
+
+    for db_event in events:
+        event = IcsEvent()
+        event.name = db_event.title
+        if db_event.event_date and db_event.event_time:
+            event.begin = datetime.combine(db_event.event_date, db_event.event_time)
+        elif db_event.event_date:
+            event.begin = db_event.event_date
+        if db_event.end_date and db_event.end_time:
+            event.end = datetime.combine(db_event.end_date, db_event.end_time)
+        elif db_event.event_date:
+            event.end = db_event.end_date
+        event.description = db_event.description
+        calendar.events.add(event)
+
+    exported_filepath = 'hower.ics'
+
+    # Save the calendar to the .ics file
+    with open(exported_filepath, 'w') as file:
+        file.writelines(calendar.serialize())
+
+    # Ensure the file exists before sending it
+    if os.path.exists(exported_filepath):
+        return send_file(
+            exported_filepath,
+            as_attachment=True,
+            download_name='hower.ics',
+            mimetype='text/calendar'  # MIME type for .ics files
+        )
+    else:
+        return abort(404, description="File not found")
 
 # running the app, with debugger on
 if __name__ == '__main__':

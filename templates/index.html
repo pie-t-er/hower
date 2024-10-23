@@ -21,7 +21,8 @@
     <form action="/upload" method="post" enctype="multipart/form-data">
         <input type="file" name="file">
         <input type="submit" value="Upload .ics">
-    </form>    
+    </form>
+    <a href="/download">Download Exported .ics</a>    
     <ul id="taskList"></ul>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
