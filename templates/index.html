@@ -18,6 +18,10 @@
         <input type="color" id="taskColor" value="#4CAF50">
         <button type="submit">Add Task</button>
     </form>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload .ics">
+    </form>    
     <ul id="taskList"></ul>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

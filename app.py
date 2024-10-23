@@ -321,7 +321,7 @@ def modify_event(event_id):
             return jsonify({"error": "An error occurred while deleting the event."}), 500
 
 @app.route('/upload', methods=['POST'])
-def upload_file():
+def ics_import():
     if 'file' not in request.files:
         return 'No file part'
     file = request.files['file']
