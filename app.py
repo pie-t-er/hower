@@ -210,5 +210,151 @@ def modify_task(task_id):
             logging.error(f"Error deleting task: {e}")
             return jsonify({"error": "An error occurred while deleting the task."}), 500
 
+
+@app.route('/api/events', methods=['GET', 'POST'])
+def handle_events():
+    if request.method == 'GET':
+        events = Event.query.order_by(Event.event_date.asc(), Event.event_time.asc(), Event.id.asc()).all()
+        return jsonify([event.to_dict() for event in events])
+    
+    elif request.method == 'POST':
+        data = request.get_json()
+        if not data or 'event' not in data:
+            return jsonify({"error": "Invalid task data"}), 400
+        
+        title = data.get('event').strip()
+        location = data.get('location')
+        date = data.get('date')
+        time = data.get('time')
+        end = data.get('end')
+        color = data.get('color')
+
+        # Validate and parse date
+        if date:
+            try:
+                date = datetime.strptime(date, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+        # Validate and parse time
+        if time:
+            try:
+                time = datetime.strptime(time, '%H:%M').time()
+            except ValueError:
+                return jsonify({"error": "Invalid time format. Use HH:MM."}), 400
+
+        # Validate and parse end
+        if end:
+            try:
+                end = datetime.strptime(end, '%H:%M').time()
+            except ValueError:
+                return jsonify({"error": "Invalid end format. Use HH:MM."}), 400
+
+        # Optional: Validate color
+        if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
+            return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
+
+        # Create a new Task instance with user_id set to default user
+        new_event = Event(
+            title=title,
+            location=location if location else None,
+            date=date,
+            time=time if time else None,
+            end=end if end else None,
+            color=color if color else None,
+            user_id=default_user.id  # Bypass user authentication, update later!!
+        )
+
+        # Add and commit to the database
+        try:
+            db.session.add(new_event)
+            db.session.commit()
+            return jsonify({
+                "message": "Event added successfully",
+                "event": new_event.to_dict()
+            }), 201
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error adding event: {e}")
+            return jsonify({"error": "An error occurred while adding the event."}), 500
+
+# these methods haven't been implemented yet in javascript, but they will be necessary for modifying event data
+@app.route('/api/events/<int:event_id>', methods=['PUT', 'PATCH', 'DELETE'])
+def modify_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    
+    # modifying a task
+    if request.method in ['PUT', 'PATCH']:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        # Update fields if they exist in the request
+        if 'event' in data:
+            event.content = data['event'].strip()
+        
+        if 'location' in data:
+            task.location = data['location'] if data['location'] else None
+        
+        if 'date' in data:
+            date = data['date']
+            if date:
+                try:
+                    event.date = datetime.strptime(date, '%Y-%m-%d').date()
+                except ValueError:
+                    return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+            else:
+                event.date = None
+        
+        if 'time' in data:
+            time = data['time']
+            if time:
+                try:
+                    event.time = datetime.strptime(time, '%H:%M').time()
+                except ValueError:
+                    return jsonify({"error": "Invalid time format. Use HH:MM."}), 400
+            else:
+                event.time = None
+
+        if 'end' in data:
+            end = data['end']
+            if end:
+                try:
+                    event.end = datetime.strptime(end, '%H:%M').time()
+                except ValueError:
+                    return jsonify({"error": "Invalid end format. Use HH:MM."}), 400
+            else:
+                event.end = None
+        
+        if 'color' in data:
+            color = data['color']
+            if color:
+                if not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]:
+                    return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
+                event.color = color
+            else:
+                event.color = None
+
+        try:
+            db.session.commit()
+            return jsonify({
+                "message": "Event updated successfully",
+                "event": task.to_dict()
+            }), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": "An error occurred while updating the event."}), 500
+    
+    # deleting a task
+    elif request.method == 'DELETE':
+        try:
+            db.session.delete(event)
+            db.session.commit()
+            return jsonify({"message": "Event deleted successfully"}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": "An error occurred while deleting the event."}), 500
+
+# running the app, with debugger on
 if __name__ == '__main__':
     app.run(debug=True)
