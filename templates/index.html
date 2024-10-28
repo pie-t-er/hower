@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Task Manager</title>
+    <title>Hower</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
@@ -11,26 +11,29 @@
   </head>
   <body>
     <div class="top-bar">
-        <h1 class="welcome">Welcome, {{ session['username'] }}!</h1>
-        <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+      <h1 class="welcome">Welcome, {{ session['username'] }}!</h1>
+      <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
     </div>
     
     <div class="task-manager-container">
-      <h1>Task Manager</h1>
-      <form id="taskForm" onsubmit="addTask(); return false;">
+      <h1>Hower</h1>
+      
+      <!-- Plus Button to Add Task/Event -->
+      <div class="add-button-container">
+        <button class="add-button" onclick="toggleDropdown()">+</button>
+        <div id="dropdownMenu" class="dropdown-menu" style="display: none;">
+          <button onclick="showForm('task')">Add Task</button>
+          <button onclick="showForm('event')">Add Event</button>
+        </div>
+      </div>
+
+      <!-- Task Form -->
+      <form id="taskForm" style="display: none;" onsubmit="addTask(); return false;">
+        <h2>Add Task</h2>
         <!-- Form Row 1 -->
         <div class="form-row">
-          <input
-            type="text"
-            id="taskInput"
-            placeholder="Enter a new task"
-            required
-          />
-          <input
-            type="text"
-            id="taskLocation"
-            placeholder="Location (optional)"
-          />
+          <input type="text" id="taskInput" placeholder="Enter a new task" required />
+          <input type="text" id="taskLocation" placeholder="Location" />
           <input type="date" id="taskDueDate" />
           <input type="time" id="taskDueTime" />
         </div>
@@ -56,14 +59,34 @@
           <button type="submit">Add Task</button>
         </div>
       </form>
+
+      <!-- Event Form -->
+      <form id="eventForm" style="display: none;" onsubmit="addEvent(); return false;">
+        <h2>Add Event</h2>
+        <!-- Form Row 1 -->
+        <div class="form-row">
+          <input type="text" id="eventInput" placeholder="Event Name" required />
+          <input type="date" id="eventDate" required />
+          <input type="time" id="eventTime" required />
+          <input type="text" id="eventLocation" placeholder="Location" />
+        </div>
+        <!-- Form Row 2 -->
+        <div class="form-row">
+          <textarea id="eventDescription" placeholder="Event Description"></textarea>
+          <input type="date" id="endDate" required />
+          <input type="time" id="endTime" required />
+          <button type="submit">Add Event</button>
+        </div>
+      </form>
+
       <ul id="taskList"></ul>
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <input type="submit" value="Upload .ics">
+      <input type="file" name="file">
+      <input type="submit" value="Upload .ics">
     </form>
-    <a href="/download">Download Exported .ics</a>   
+    <a href="/download">Download Exported .ics</a>
   </body>
 </html>

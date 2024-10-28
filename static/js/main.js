@@ -195,6 +195,55 @@ function addEvent() {
         });
     }
   }
+
+  function toggleDropdown() {
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    
+    // if one of the forms are currently open, clicking the X closes all forms and clears the form
+    if (document.getElementById("taskForm").style.display === 'block') {
+        document.querySelector('.add-button').classList.remove("rotate");
+        hideForms()
+        document.getElementById("taskForm").reset()
+    }
+    else if (document.getElementById("eventForm").style.display === 'block') {
+        document.querySelector('.add-button').classList.remove("rotate");
+        hideForms()
+        document.getElementById("eventForm").reset()
+    }
+    // if the dropdown menu is open, clicking the X cancels this operation
+    else if (dropdownMenu.style.display === 'flex') {
+        document.querySelector('.add-button').classList.remove("rotate");
+        dropdownMenu.style.display = 'none'
+    }
+    // if none of the forms are open, then the dropdown opens and the button becomes a cancel button.
+    else {
+        document.querySelector('.add-button').classList.add("rotate");
+        dropdownMenu.style.display = 'flex'
+    }
+}
+  
+  function showForm(type) {
+    const taskForm = document.getElementById("taskForm");
+    const eventForm = document.getElementById("eventForm");
+  
+    if (type === "task") {
+      taskForm.style.display = "block";
+    } else if (type === "event") {
+      eventForm.style.display = "block";
+    }
+    document.getElementById("dropdownMenu").style.display = "none";
+  }
+  
+  function hideForms() {
+    // Hide both forms and reset dropdown display
+    document.getElementById("taskForm").style.display = "none";
+    document.getElementById("eventForm").style.display = "none";
+    document.getElementById("dropdownMenu").style.display = "none";
+  }
+  
+  function updatePriorityValue(value) {
+    document.getElementById("priorityValue").textContent = value;
+  }
   
   // Load tasks when the page loads
   document.addEventListener('DOMContentLoaded', loadTasks);
