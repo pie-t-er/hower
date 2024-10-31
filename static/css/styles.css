@@ -248,13 +248,13 @@ button {
 }
 
 /* Styling the task list */
-#taskList {
+#list {
   margin-top: 30px;
   list-style-type: none;
   padding: 0;
 }
 
-#taskList li {
+#list li {
   background-color: #fff;
   padding: 15px;
   margin-bottom: 15px;
@@ -266,12 +266,12 @@ button {
   align-items: center;
 }
 
-#taskList .task-details {
+#list .task-details {
   display: flex;
   flex-direction: column;
 }
 
-#taskList .task-details p {
+#list .task-details p {
   margin: 2px 0;
 }
 

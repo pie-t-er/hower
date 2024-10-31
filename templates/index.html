@@ -73,13 +73,13 @@
         <!-- Form Row 2 -->
         <div class="form-row">
           <textarea id="eventDescription" placeholder="Event Description"></textarea>
-          <input type="date" id="endDate" required />
-          <input type="time" id="endTime" required />
+          <input type="date" id="endDate"/>
+          <input type="time" id="endTime"/>
           <button type="submit">Add Event</button>
         </div>
       </form>
 
-      <ul id="taskList"></ul>
+      <ul id="list"></ul>
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

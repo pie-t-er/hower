@@ -1,130 +1,165 @@
-    function loadTasks() {
-  fetch('/api/tasks')
-      .then(response => response.json())
-      .then(tasks => {
-          const taskList = document.getElementById('taskList');
-          taskList.innerHTML = '';
-          tasks.forEach(task => {
-              const li = document.createElement('li');
+function loadItems() {
+    fetch('api/returnAll')
+    .then(response => response.json())
+    .then(combined_list =>{
 
-              // Task Details Container
-              const detailsDiv = document.createElement('div');
-              detailsDiv.classList.add('task-details');
+        const list = document.getElementById('list');
+        list.innerHTML = '';
 
-              // Task Content
-              const contentP = document.createElement('p');
-              contentP.textContent = `Task: ${task.content}`;
-              detailsDiv.appendChild(contentP);
+        combined_list.forEach(item => {
+            
+            const li = document.createElement('li');
 
-              if (task.priority) {
-                const prior = document.createElement('p');
-                prior.textContent = `Priority: ${task.priority}`;
-                detailsDiv.appendChild(prior);
-              }
+            // Task/Event Details Container
+            const detailsDiv = document.createElement('div');
+            detailsDiv.classList.add('item-details');
 
-              // Location (if exists)
-              if (task.location) {
-                  const locationP = document.createElement('p');
-                  locationP.textContent = `Location: ${task.location}`;
-                  detailsDiv.appendChild(locationP);
-              }
+            // Type Check: Task or Event
+            if (item.type === 'task') {
+                // Display Task Content
+                const contentP = document.createElement('p');
+                contentP.textContent = `Task: ${item.content}`;
+                detailsDiv.appendChild(contentP);
 
-              // Due Date and Time (if exists)
-              if (task.due_date || task.due_time) {
-                const dueP = document.createElement('p');
-                let dueText = 'Due: ';
-                if (task.due_date) {
-                    dueText += `${task.due_date}`;
+                // Display Priority (if exists)
+                if (item.priority) {
+                    const prior = document.createElement('p');
+                    prior.textContent = `Priority: ${item.priority}`;
+                    detailsDiv.appendChild(prior);
                 }
-                if (task.due_time) {
-                    dueText += ` at ${task.due_time}`;
+
+                // Display Location (if exists)
+                if (item.location) {
+                    const locationP = document.createElement('p');
+                    locationP.textContent = `Location: ${item.location}`;
+                    detailsDiv.appendChild(locationP);
                 }
-                dueP.textContent = dueText;
-                detailsDiv.appendChild(dueP);
-              }
 
-              li.appendChild(detailsDiv);
+                // Display Due Date and Time (if exists)
+                if (item.due_date || item.due_time) {
+                    const dueP = document.createElement('p');
+                    let dueText = 'Due: ';
+                    if (item.due_date) {
+                        dueText += `${item.due_date}`;
+                    }
+                    if (item.due_time) {
+                        dueText += ` at ${item.due_time}`;
+                    }
+                    dueP.textContent = dueText;
+                    detailsDiv.appendChild(dueP);
+                }
 
-              // Task Color (if exists)
-              if (task.color) {
-                  const colorSpan = document.createElement('span');
-                  colorSpan.classList.add('task-color');
-                  colorSpan.textContent = '■'; // Colored square
-                  colorSpan.style.color = task.color;
-                  li.appendChild(colorSpan);
-              }
+                // Display Item Color (if exists)
+                if (item.color) {
+                    const colorSpan = document.createElement('span');
+                    colorSpan.classList.add('item-color');
+                    colorSpan.textContent = '■'; // Colored square
+                    colorSpan.style.color = item.color;
+                    li.appendChild(colorSpan);
+                }
 
-              taskList.appendChild(li);
-          });
-      })
-      .catch(error => console.error('Error loading tasks:', error));
+            } else if (item.type === 'event') {
+                // Display Event Content
+                const contentP = document.createElement('p');
+                contentP.textContent = `Event: ${item.title}`;
+                detailsDiv.appendChild(contentP);
+
+                // Display Location (if exists)
+                if (item.location) {
+                    const locationP = document.createElement('p');
+                    locationP.textContent = `Location: ${item.location}`;
+                    detailsDiv.appendChild(locationP);
+                }
+
+                // Display Event Date and Time (if exists)
+                if (item.event_date || item.event_time) {
+                    const dateP = document.createElement('p');
+                    let eventText = '';
+                    if (item.event_date) {
+                        eventText += `${item.event_date}`;
+                    }
+                    if (item.event_time) {
+                        eventText += ` @ ${item.event_time}`;
+                    }
+                    dateP.textContent = eventText;
+                    detailsDiv.appendChild(dateP);
+                }
+            }
+
+            li.appendChild(detailsDiv);
+
+            list.appendChild(li);
+        });
+    })
+    .catch(error => console.error('Error loading tasks and events:', error));
 }
 
 function addTask() {
-  const taskInput = document.getElementById('taskInput');
-  const task = taskInput.value.trim();
+    const taskInput = document.getElementById('taskInput');
+    const task = taskInput.value.trim();
 
-  const locationInput = document.getElementById('taskLocation');
-  const location = locationInput.value.trim();
+    const locationInput = document.getElementById('taskLocation');
+    const location = locationInput.value.trim();
 
-  const dueDateInput = document.getElementById('taskDueDate');
-  const due_date = dueDateInput.value; // Format: 'YYYY-MM-DD'
+    const dueDateInput = document.getElementById('taskDueDate');
+    const due_date = dueDateInput.value; // Format: 'YYYY-MM-DD'
 
-  const dueTimeInput = document.getElementById('taskDueTime');
-  const due_time = dueTimeInput.value; // Format: 'HH:MM'
+    const dueTimeInput = document.getElementById('taskDueTime');
+    const due_time = dueTimeInput.value; // Format: 'HH:MM'
 
-  const priorityInput = document.getElementById('taskPriority');
-  const priority = priorityInput.value;
+    const priorityInput = document.getElementById('taskPriority');
+    const priority = priorityInput.value;
 
-  const colorInput = document.getElementById('taskColor');
-  const color = colorInput.value; // Format: '#FFFFFF'
+    const colorInput = document.getElementById('taskColor');
+    const color = colorInput.value; // Format: '#FFFFFF'
 
-  console.log('Collected data');
+    console.log('Collected data');
 
-  if (task) {
-      console.log(task);
-      fetch('/api/tasks', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-              task: task,
-              location: location || null,
-              due_date: due_date || null,
-              due_time: due_time || null,
-              priority: priority || 5,
-              color: color || null
-              // If you're handling user authentication, include user_id here
-          }),
-      })
-      .then(response => {
-          console.log(response);
-          if (!response.ok) {
-              console.log('uh oh');
-              console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task')
-              return response.json().then(err => { throw err; });
-          }
-          return response.json();
-      })
-      .then(data => {
-          console.log(data.message);
-          // Clear all input fields after successful addition
-          taskInput.value = '';
-          locationInput.value = '';
-          dueDateInput.value = '';
-          dueTimeInput.value = '';
-          priorityInput.value = '';
-          colorInput.value = '#4CAF50'; // Reset to default color
-          loadTasks();
-      })
-      .catch(error => {
-          console.error('Error adding task:', error.error || error);
-          alert(error.error || 'An error occurred while adding the task.');
-      });
-  } else {
-      alert('Task description cannot be empty.');
-  }
+    if (task) {
+        console.log(task);
+        fetch('/api/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                task: task,
+                location: location || null,
+                due_date: due_date || null,
+                due_time: due_time || null,
+                priority: priority || 5,
+                color: color || null
+            }),
+        })
+        .then(response => {
+            console.log(response);
+             if (!response.ok) {
+                console.log('uh oh');
+                console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task')
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data.message);
+            // Clear all input fields after successful addition
+            taskInput.value = '';
+            locationInput.value = '';
+            dueDateInput.value = '';
+            dueTimeInput.value = '';
+            priorityInput.value = '';
+            colorInput.value = '#4CAF50'; // Reset to default color
+            toggleDropdown();
+            loadItems();
+        })
+        .catch(error => {
+            console.error('Error adding task:', error.error || error);
+            alert(error.error || 'An error occurred while adding the task.');
+        });
+    }
+    else {
+        alert('Task description cannot be empty.');
+    }
 }
 
 function addEvent() {
@@ -146,9 +181,6 @@ function addEvent() {
     const endTimeInput = document.getElementById('endTime');
     const endTime = endTimeInput.value; // Format: 'HH:MM'
   
-    const colorInput = document.getElementById('eventColor');
-    const color = colorInput.value; // Format: '#FFFFFF'
-  
     console.log('Collected data');
   
     if (event) {
@@ -163,17 +195,15 @@ function addEvent() {
                 location: location || null,
                 date: date || null,
                 time: time || null,
-                eDate: endTime || null,
-                eTime: endDate || null,
-                color: color || null
-                // If you're handling user authentication, include user_id here
+                eDate: endDate || null,
+                eTime: endTime || null,
             }),
         })
         .then(response => {
             console.log(response);
             if (!response.ok) {
                 console.log('uh oh');
-                console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task')
+                console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to an event')
                 return response.json().then(err => { throw err; });
             }
             return response.json();
@@ -182,21 +212,22 @@ function addEvent() {
             console.log(data.message);
             // Clear all input fields after successful addition
             eventInput.value = '';
+            locationInput.value = '';
             dateInput.value = '';
             timeInput.value = '';
             endDateInput.value = '';
             endTimeInput.value = '';
-            colorInput.value = '#4CAF50'; // Reset to default color
-            // loadEvents();
+            toggleDropdown();
+            loadItems();
         })
         .catch(error => {
-            console.error('Error adding task:', error.error || error);
-            alert(error.error || 'An error occurred while adding the task.');
+            console.error('Error adding event:', error.error || error);
+            alert(error.error || 'An error occurred while adding the event.');
         });
     }
   }
 
-  function toggleDropdown() {
+function toggleDropdown() {
     const dropdownMenu = document.getElementById('dropdownMenu');
     
     // if one of the forms are currently open, clicking the X closes all forms and clears the form
@@ -222,28 +253,28 @@ function addEvent() {
     }
 }
   
-  function showForm(type) {
+function showForm(type) {
     const taskForm = document.getElementById("taskForm");
     const eventForm = document.getElementById("eventForm");
-  
+
     if (type === "task") {
-      taskForm.style.display = "block";
+        taskForm.style.display = "block";
     } else if (type === "event") {
-      eventForm.style.display = "block";
+        eventForm.style.display = "block";
     }
     document.getElementById("dropdownMenu").style.display = "none";
-  }
+}
   
-  function hideForms() {
+function hideForms() {
     // Hide both forms and reset dropdown display
     document.getElementById("taskForm").style.display = "none";
     document.getElementById("eventForm").style.display = "none";
     document.getElementById("dropdownMenu").style.display = "none";
-  }
+}
   
-  function updatePriorityValue(value) {
+function updatePriorityValue(value) {
     document.getElementById("priorityValue").textContent = value;
-  }
+}
   
-  // Load tasks when the page loads
-  document.addEventListener('DOMContentLoaded', loadTasks);
+// Load tasks when the page loads
+document.addEventListener('DOMContentLoaded', loadItems);

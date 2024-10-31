@@ -236,15 +236,16 @@ def handle_events():
     elif request.method == 'POST':
         data = request.get_json()
         if not data or 'event' not in data:
-            return jsonify({"error": "Invalid task data"}), 400
+            return jsonify({"error": "Invalid event data"}), 400
+        
+        print('Received data:', data)
         
         title = data.get('event').strip()
         location = data.get('location')
         date = data.get('date')
         time = data.get('time')
-        endDate = data.get('eDate')
-        endTime = data.get('eTime')
-        color = data.get('color')
+        end_date = data.get('eDate')
+        end_time = data.get('eTime')
 
         # Validate and parse date
         if date:
@@ -260,27 +261,32 @@ def handle_events():
             except ValueError:
                 return jsonify({"error": "Invalid time format. Use HH:MM."}), 400
 
-        # Validate and parse end
-        if end:
+        # Validate and parse end_date
+        if end_date:
             try:
-                end = datetime.strptime(end, '%H:%M').time()
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
             except ValueError:
-                return jsonify({"error": "Invalid end format. Use HH:MM."}), 400
+                return jsonify({"error": "Invalid end date format. Use YYYY-MM-DD."}), 400
 
-        # Optional: Validate color
-        if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
-            return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
+        # Validate and parse end_time
+        if end_time:
+            try:
+                end_time = datetime.strptime(end_time, '%H:%M').time()
+            except ValueError:
+                return jsonify({"error": "Invalid end time format. Use HH:MM."}), 400
 
-        # Create a new Task instance
+        # Create a new Event instance
         new_event = Event(
             title=title,
             location=location if location else None,
-            date=date,
-            time=time if time else None,
-            end=end if end else None,
-            color=color if color else None,
+            event_date=date,
+            event_time=time if time else None,
+            end_date=end_date if end_date else None,
+            end_time=end_time if end_time else None,
             user_id=user_id
         )
+
+        print('New event:', new_event)
 
         # Add and commit to the database
         try:
@@ -518,7 +524,6 @@ def ics_import():
         
         return 'File uploaded and processed successfully'
 
-
 @app.route('/download', methods=['GET'])
 def ics_export():
     if 'user_id' not in session:
@@ -581,6 +586,42 @@ def ics_export():
         )
     else:
         return abort(404, description="File not found")
+
+@app.route('/api/returnAll', methods=['GET'])
+def returnAll():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session['user_id']
+
+    if request.method == 'GET':
+        # Fetch tasks only for the logged-in user
+        tasks = Task.query.filter_by(user_id=user_id).order_by(
+            Task.priority.desc(),
+            nullslast(Task.due_date.asc()),
+            nullslast(Task.due_time.asc()),
+            Task.id.asc()
+        ).all()
+
+        events = Event.query.filter_by(user_id=user_id).order_by(
+            Event.event_date.asc(),
+            Event.event_time.asc(),
+            Event.id.asc()
+        ).all()
+
+        # Concatenate tasks and events into a single list
+        combined_list = tasks + events
+
+        # Sort the combined list by date and time, with null handling
+        combined_list.sort(key=lambda item: (
+            item.due_date if isinstance(item, Task) and item.due_date else datetime.max.date(),
+            item.due_time if isinstance(item, Task) and item.due_time else datetime.min.time(),
+            item.event_date if isinstance(item, Event) and item.event_date else datetime.max.date(),
+            item.event_time if isinstance(item, Event) and item.event_time else datetime.min.time()
+        ))
+
+        
+        return jsonify([item.to_dict() for item in combined_list])
 
 # running the app, with debugger on
 if __name__ == '__main__':

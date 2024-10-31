@@ -20,5 +20,6 @@ class Task(db.Model):
             'due_time': str(self.due_time) if self.due_time else None,
             'priority': self.priority,
             'color': self.color,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'type': 'task'
         }
