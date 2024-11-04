@@ -10,7 +10,10 @@ class Event(db.Model):
     event_time = db.Column(db.Time, nullable=True)
     end_date = db.Column(db.Date, nullable=True)
     end_time = db.Column(db.Time, nullable=True)
+<<<<<<< Updated upstream
     color = db.Column(db.String(7), nullable=True)
+=======
+>>>>>>> Stashed changes
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def to_dict(self):

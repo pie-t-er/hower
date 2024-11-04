@@ -10,6 +10,10 @@
   "author": "The Null Terminators",
   "license": "MIT",
   "devDependencies": {
+<<<<<<< Updated upstream
     "electron": "^32.1.2"
+=======
+    "electron": "^32.2.0"
+>>>>>>> Stashed changes
   }
 }
