@@ -5,7 +5,7 @@ Check the requirements.txt file to make sure you have all necessary dependencies
 
 ## To Run the Flask Backend Server in a Browser:
 
-In the terminal, navigate to the repository, and run:
+In the terminal, navigate to the repository, and run tset test:
 
 ```
 python app.py
