@@ -6,12 +6,22 @@ from ics import Calendar, Event as IcsEvent, Todo as IcsTask
 
 from datetime import datetime
 import logging
+
+# files:
+
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import nullslast
 from models.event import Event
+
 from models.user import User
 from models.task import Task
 from models.extensions import db
+
+import numpy as np
+from datetime import date
+from datetime import time
+# initializing the app and SQLAlchemy
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
@@ -32,6 +42,7 @@ logging.basicConfig(level=logging.DEBUG)
 with app.app_context():
     db.create_all()
 
+
 # Route to render the main task manager if the user is logged in
 @app.route('/')
 def index():
@@ -39,10 +50,18 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html', username=session['username'])
 
+@app.route('/views')
+def views():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('view.html', username=session['username'])
+
+
 # Route to render the login page
 @app.route('/login')
 def login():
     return render_template('login.html')
+
 
 # Route to render the registration page
 @app.route('/register')
@@ -85,6 +104,7 @@ def logout():
     return redirect(url_for('login'))
 
 # API route for handling tasks
+
 @app.route('/api/tasks', methods=['GET', 'POST'])
 def handle_tasks():
     if 'user_id' not in session:
@@ -93,15 +113,17 @@ def handle_tasks():
     user_id = session['user_id']
 
     if request.method == 'GET':
+
         # Fetch tasks only for the logged-in user
         tasks = Task.query.filter_by(user_id=user_id).order_by(
-            Task.priority.desc(),
+            Task.placement.asc(),
             nullslast(Task.due_date.asc()),
             nullslast(Task.due_time.asc()),
             Task.id.asc()
         ).all()
 
         return jsonify([task.to_dict() for task in tasks]), 200
+
 
     elif request.method == 'POST':
         data = request.get_json()
@@ -135,19 +157,29 @@ def handle_tasks():
         if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
             return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
 
+
+        # Create a new Task instance with user_id set to default user
+        datetime_temp = datetime.combine(due_date,due_time)
+        print(datetime_temp)
+        datetimenow = datetime.now()
+
         new_task = Task(
+
             content=content,
             location=location if location else None,
             due_date=due_date,
             due_time=due_time,
             priority=priority if priority else None,
             color=color if color else None,
-            user_id=user_id  # Associate the task with the logged-in user
-        )
+
+            user_id = user_id,  # Associate the task with the logged-in user
+            placement = np.sqrt(float(((10 - int(priority) **2) + (((datetime_temp - datetimenow).total_seconds() / 60 / 60 / 12) **2))# Bypass user authentication, update later!!
+                              )))
 
         try:
             db.session.add(new_task)
             db.session.commit()
+
             return jsonify({
                 "message": "Task added successfully",
                 "task": new_task.to_dict()
@@ -179,7 +211,9 @@ def modify_task(task_id):
             task.location = data['location'] if data['location'] else None
         if 'due_date' in data:
             due_date_str = data['due_date']
-            if due_date_str:
+            if isinstance(data['due_date'], date):
+                task.due_date = data['due_date']
+            elif due_date_str:
                 try:
                     task.due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
                 except ValueError:
@@ -187,21 +221,39 @@ def modify_task(task_id):
             else:
                 task.due_date = None
         if 'due_time' in data:
+
+
             due_time_str = data['due_time']
+            print(isinstance(data['due_time'], time))
+            print(type(data['due_time']))
+
+            if (due_time_str.count(':') > 1):
+                due_time_str = due_time_str[:-3]
             if due_time_str:
                 try:
                     task.due_time = datetime.strptime(due_time_str, '%H:%M').time()
                 except ValueError:
+                    print(isinstance(data['due_time'], time))
                     return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
             else:
                 task.due_time = None
         if 'priority' in data:
-            task.priority = data['priority'] if data['priority'] else None
+
+            task.priority = data['priority']
+        
         if 'color' in data:
             color = data['color']
-            if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
-                return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
-            task.color = color
+            if color:
+                if not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]:
+                    return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
+                task.color = color
+            else:
+                task.color = None
+        if (True):
+            datetimenow = datetime.now()
+            datetime_temp = datetime.combine(task.due_date, task.due_time)
+            task.placement = np.sqrt(float(((10 - int(task.priority) **2) + (((datetime_temp - datetimenow).total_seconds() / 60 / 60 / 12) **2))))# Bypass user authentication, update later!!))
+
 
         try:
             db.session.commit()
@@ -220,7 +272,71 @@ def modify_task(task_id):
             db.session.rollback()
             logging.error(f"Error deleting task: {e}")
             return jsonify({"error": "An error occurred while deleting the task."}), 500
+@app.route('/api/tasks/out', methods=['GET'])
+def export_tasks():
+    try:
+        tasks = Task.query.all()  # Fetch all tasks
+        return jsonify([task.to_dict() for task in tasks])  # Return as JSON
+    except Exception as e:
+        logging.error(f"Error fetching tasks: {e}")
+        return jsonify({"error": "An error occurred while fetching tasks."}), 500
 
+
+
+@app.route('/api/tasks/in', methods=['POST'])
+def import_tasks():
+    data = request.get_json()  # Get the JSON data from the request
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "Invalid data format. Expected a list of tasks."}), 400
+
+    tasks = []
+    for item in data:
+        # Extract task fields
+        content = item.get('task')
+        location = item.get('location')
+        due_date_str = item.get('due_date')
+        due_time_str = item.get('due_time')
+        priority = item.get('priority')
+        color = item.get('color')
+        user_id = item.get('user_id')
+        # Validate and parse due_date
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({"error": f"Invalid due_date format for task '{content}'. Use YYYY-MM-DD."}), 400
+
+        # Validate and parse due_time
+        due_time = None
+        if due_time_str:
+            try:
+                due_time = datetime.strptime(due_time_str, '%H:%M').time()
+            except ValueError:
+                return jsonify({"error": f"Invalid due_time format for task '{content}'. Use HH:MM."}), 400
+
+        # Create a new Task instance
+        new_task = Task(
+            content=content.strip(),
+            location=location if location else None,
+            due_date=due_date,
+            due_time=due_time,
+            priority=priority if priority else None,
+            color=color if color else None,
+            user_id=user_id,  # Use the default user for simplicity
+        )
+
+        tasks.append(new_task)  # Add to the list of tasks
+
+    # Add and commit to the database
+    try:
+        db.session.add_all(tasks)  # Add all tasks to the session
+        db.session.commit()
+        return jsonify({"message": f"{len(tasks)} tasks imported successfully."}), 201
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error importing tasks: {e}")
+        return jsonify({"error": "An error occurred while importing tasks."}), 500
 
 @app.route('/api/events', methods=['GET', 'POST'])
 def handle_events():
@@ -261,9 +377,9 @@ def handle_events():
                 return jsonify({"error": "Invalid time format. Use HH:MM."}), 400
 
         # Validate and parse end
-        if end:
+        if endTime:
             try:
-                end = datetime.strptime(end, '%H:%M').time()
+                end = datetime.strptime(endTime, '%H:%M').time()
             except ValueError:
                 return jsonify({"error": "Invalid end format. Use HH:MM."}), 400
 
@@ -277,7 +393,7 @@ def handle_events():
             location=location if location else None,
             date=date,
             time=time if time else None,
-            end=end if end else None,
+            end=endTime if endTime else None,
             color=color if color else None,
             user_id=user_id
         )
@@ -318,7 +434,7 @@ def modify_event(event_id):
             event.content = data['event'].strip()
         
         if 'location' in data:
-            task.location = data['location'] if data['location'] else None
+            event.location = data['location'] if data['location'] else None
         
         if 'date' in data:
             date = data['date']
@@ -344,7 +460,7 @@ def modify_event(event_id):
             date = data['eDate']
             if date:
                 try:
-                    event.end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+                    event.end_date = datetime.strptime(date, '%Y-%m-%d').date()
                 except ValueError:
                     return jsonify({"error": "Invalid end date format. Use YYYY-MM-DD."}), 400
             else:
@@ -373,7 +489,7 @@ def modify_event(event_id):
             db.session.commit()
             return jsonify({
                 "message": "Event updated successfully",
-                "event": task.to_dict()
+                "event": event.to_dict()
             }), 200
         except Exception as e:
             db.session.rollback()
@@ -415,6 +531,7 @@ def ics_import():
                 time = event.begin
                 eTime = event.end
                 eDate = event.end
+                color = event.color
                 descript = event.description.strip
 
                 # Validate and parse date
@@ -580,7 +697,8 @@ def ics_export():
             mimetype='text/calendar'  # MIME type for .ics files
         )
     else:
-        return abort(404, description="File not found")
+        return jsonify({"error": "file not found"}), 404
+
 
 # running the app, with debugger on
 if __name__ == '__main__':

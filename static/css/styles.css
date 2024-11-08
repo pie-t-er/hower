@@ -292,7 +292,7 @@ body {
 }
 
 /* Style for the logout button */
-.logout-button {
+.logout-button, .views-button {
   padding: 10px 15px;
   background-color: #4CAF50;
   color: white;
