@@ -1,98 +1,137 @@
 function loadItems() {
     fetch('api/returnAll')
     .then(response => response.json())
-    .then(combined_list =>{
-
+    .then(combined_list => {
         const list = document.getElementById('list');
         list.innerHTML = '';
 
         combined_list.forEach(item => {
-            
             const li = document.createElement('li');
+            li.classList.add(item.type === 'task' ? 'task-item' : 'event-item');
+            li.id = `item-${item.id}`; // Assign ID for easy deletion
 
-            // Task/Event Details Container
             const detailsDiv = document.createElement('div');
             detailsDiv.classList.add('item-details');
 
-            // Type Check: Task or Event
+            // Add checkbox for tasks
             if (item.type === 'task') {
-                // Display Task Content
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.classList.add('task-checkbox');
+                checkbox.checked = item.completed || false;
+                checkbox.addEventListener('change', () => toggleTaskCompletion(item.id, checkbox.checked));
+                li.appendChild(checkbox);
+
                 const contentP = document.createElement('p');
                 contentP.textContent = `Task: ${item.content}`;
                 detailsDiv.appendChild(contentP);
 
-                // Display Priority (if exists)
                 if (item.priority) {
                     const prior = document.createElement('p');
                     prior.textContent = `Priority: ${item.priority}`;
                     detailsDiv.appendChild(prior);
                 }
 
-                // Display Location (if exists)
                 if (item.location) {
                     const locationP = document.createElement('p');
                     locationP.textContent = `Location: ${item.location}`;
                     detailsDiv.appendChild(locationP);
                 }
 
-                // Display Due Date and Time (if exists)
                 if (item.due_date || item.due_time) {
                     const dueP = document.createElement('p');
-                    let dueText = 'Due: ';
-                    if (item.due_date) {
-                        dueText += `${item.due_date}`;
-                    }
-                    if (item.due_time) {
-                        dueText += ` at ${item.due_time}`;
-                    }
-                    dueP.textContent = dueText;
+                    dueP.textContent = `Due: ${item.due_date || ''} ${item.due_time ? 'at ' + item.due_time : ''}`;
                     detailsDiv.appendChild(dueP);
                 }
 
-                // Display Item Color (if exists)
-                if (item.color) {
-                    const colorSpan = document.createElement('span');
-                    colorSpan.classList.add('item-color');
-                    colorSpan.textContent = '■'; // Colored square
-                    colorSpan.style.color = item.color;
-                    li.appendChild(colorSpan);
-                }
-
             } else if (item.type === 'event') {
-                // Display Event Content
                 const contentP = document.createElement('p');
                 contentP.textContent = `Event: ${item.title}`;
                 detailsDiv.appendChild(contentP);
 
-                // Display Location (if exists)
                 if (item.location) {
                     const locationP = document.createElement('p');
                     locationP.textContent = `Location: ${item.location}`;
                     detailsDiv.appendChild(locationP);
                 }
 
-                // Display Event Date and Time (if exists)
                 if (item.event_date || item.event_time) {
                     const dateP = document.createElement('p');
-                    let eventText = '';
-                    if (item.event_date) {
-                        eventText += `${item.event_date}`;
-                    }
-                    if (item.event_time) {
-                        eventText += ` @ ${item.event_time}`;
-                    }
-                    dateP.textContent = eventText;
+                    dateP.textContent = `${item.event_date || ''} ${item.event_time ? '@ ' + item.event_time : ''}`;
                     detailsDiv.appendChild(dateP);
                 }
+
+                li.style.backgroundColor = item.color || '#4CAF50';
+                li.style.color = '#FFFFFF';
             }
 
             li.appendChild(detailsDiv);
 
+            // Edit and Delete Buttons
+            const actionsDiv = document.createElement('div');
+            actionsDiv.classList.add('item-actions');
+
+            const editButton = document.createElement('button');
+            editButton.classList.add('edit-button');
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => editItem(item.id));
+            actionsDiv.appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('delete-button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => deleteItem(item.id, item.type)); // Pass item type for deletion
+            actionsDiv.appendChild(deleteButton);
+
+            li.appendChild(actionsDiv);
             list.appendChild(li);
         });
     })
     .catch(error => console.error('Error loading tasks and events:', error));
 }
+
+// Placeholder functions for task completion, edit, and delete
+function toggleTaskCompletion(id, isCompleted) {
+    console.log(`Task ${id} completion status: ${isCompleted}`);
+    // Implement the update API call here
+    if (isCompleted) {
+        deleteItem(id, 'task-item');
+    }
+}
+
+function editItem(id) {
+    console.log(`Edit item with id: ${id}`);
+    // Implement the edit functionality here
+}
+
+function deleteItem(itemId, itemType) {
+    // Determine the appropriate API endpoint based on item type
+    const endpoint = itemType === 'task' ? `/api/tasks/${itemId}` : `/api/events/${itemId}`;
+
+    fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Remove the item from the UI after successful deletion
+            const itemElement = document.getElementById(`item-${itemId}`);
+            if (itemElement) {
+                itemElement.remove();
+            }
+            console.log(`${itemType} deleted successfully.`);
+        } else {
+            // Handle errors, if any
+            response.json().then(data => {
+                console.error(data.error || `Failed to delete ${itemType}.`);
+            });
+        }
+    })
+    .catch(error => console.error(`An error occurred: ${error}`));
+}
+
 
 function addTask() {
     const taskInput = document.getElementById('taskInput');

@@ -247,39 +247,54 @@ button {
   background-color: #45a049;
 }
 
-/* Styling the task list */
-#list {
-  margin-top: 30px;
-  list-style-type: none;
-  padding: 0;
-}
-
+/* Task and event item styling */
 #list li {
-  background-color: #fff;
   padding: 15px;
   margin-bottom: 15px;
-  border-left: 5px solid #4CAF50; /* Default border color */
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
-#list .task-details {
+/* Checkbox styling */
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-right: 15px;
+}
+
+/* Edit and delete buttons styling */
+.item-actions {
   display: flex;
-  flex-direction: column;
+  gap: 10px;
 }
 
-#list .task-details p {
-  margin: 2px 0;
+.edit-button,
+.delete-button {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
 }
 
-/* Task color indicator */
-.task-color {
-  font-size: 24px;
-  margin-left: 15px;
+.edit-button:hover {
+  background-color: #45A049;
 }
+
+.delete-button {
+  background-color: #F44336;
+}
+
+.delete-button:hover {
+  background-color: #D32F2F;
+}
+
 
 /* Style for the top bar */
 .top-bar {

@@ -615,8 +615,8 @@ def returnAll():
         # Sort the combined list by date and time, with null handling
         combined_list.sort(key=lambda item: (
             item.due_date if isinstance(item, Task) and item.due_date else datetime.max.date(),
-            item.due_time if isinstance(item, Task) and item.due_time else datetime.min.time(),
             item.event_date if isinstance(item, Event) and item.event_date else datetime.max.date(),
+            item.due_time if isinstance(item, Task) and item.due_time else datetime.min.time(),
             item.event_time if isinstance(item, Event) and item.event_time else datetime.min.time()
         ))
 
