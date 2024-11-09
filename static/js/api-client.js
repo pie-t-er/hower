@@ -37,6 +37,11 @@ function deleteItem(itemId, itemType) {
   .catch(error => console.error(`An error occurred: ${error}`));
 }
 
+// This function hasn't been implemented...
+function editItem(itemId, item) {
+
+}
+
 function addTask() {
   const taskInput = document.getElementById('taskInput');
   const task = taskInput.value.trim();
@@ -170,4 +175,4 @@ function addEvent() {
   }
 }
 
-export{ loadItems, deleteItem, addTask, addEvent };
+export{ loadItems, deleteItem, addTask, addEvent, editItem };

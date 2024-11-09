@@ -82,7 +82,7 @@
       <ul id="list"></ul>
     </div>
 
-    <script src="{{ url_for('static', filename='js/itinerary.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/itinerary.js') }}"></script>
     <form action="/upload" method="post" enctype="multipart/form-data">
       <input type="file" name="file">
       <input type="submit" value="Upload .ics">
