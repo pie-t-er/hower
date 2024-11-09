@@ -133,4 +133,13 @@ function hideForms() {
   document.getElementById("dropdownMenu").style.display = "none";
 }
 
+// Placeholder function for task completion, this function is unused
+function toggleTaskCompletion(id, isCompleted) {
+    console.log(`Task ${id} completion status: ${isCompleted}`);
+    // Implement the update API call here
+    if (isCompleted) {
+        deleteItem(id, 'task');
+    }
+  }
+
 export { itineraryElement, toggleDropdown, showForm };
