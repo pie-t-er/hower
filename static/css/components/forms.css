@@ -1,10 +1,3 @@
-/* Adjusting the task form to display inputs side by side */
-#taskForm {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
 .form-row {
   display: flex;
   flex-wrap: wrap;
@@ -106,12 +99,6 @@
   flex: 2;
 }
 
-#priorityValue {
-  font-size: 16px;
-  margin-left: 10px;
-  align-self: center;
-}
-
 /* Styling for the color picker container */
 .color-container {
   display: flex;
@@ -124,8 +111,10 @@
   margin-right: 10px;
 }
 
-#taskColor {
-  cursor: pointer;
+#priorityValue {
+  font-size: 16px;
+  margin-left: 10px;
+  align-self: center;
 }
 
 /* Styling the Add Task button */
@@ -140,6 +129,8 @@
   align-self: center;
 }
 
-#taskForm button:hover {
-  background-color: #45a049;
+#taskForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }

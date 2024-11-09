@@ -1,3 +1,7 @@
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/header.css';
+
 /* Global body styling */
 body {
   font-family: Arial, sans-serif;
@@ -16,9 +20,6 @@ button {
   border-radius: 5px;
   align-self: center;
 }
-
-@import './components/buttons.css';
-@import './components/forms.css';
 
 /* Container for the task manager */
 .task-manager-container {
@@ -58,27 +59,6 @@ button {
 .item-actions {
   display: flex;
   gap: 10px;
-}
-
-/* Style for the top bar */
-.top-bar {
-  position: fixed;               /* Stays at the top */
-  top: 20px;
-  right: 20px;                   /* Align to the right */
-  left: 20px;                    /* Padding on the left */
-  z-index: 9999;                 /* Ensures it's on top of other elements */
-  display: flex;
-  justify-content: space-between; /* Space between welcome and logout */
-  align-items: center;           /* Align items vertically */
-}
-
-/* welcome message (as a title) */
-.welcome {
-  text-align: left;   
-  font-family: 'Helvetica Neue', sans-serif;
-  color: #333;                   /* Dark color for visibility on white background */
-  flex-grow: 1;                 
-  padding-left: 20px;            /* Optional padding to space from the edge */
 }
 
 .add-button-container {
