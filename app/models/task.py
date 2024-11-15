@@ -1,4 +1,4 @@
-from models.extensions import db
+from .extensions import db
 
 # Task Model
 class Task(db.Model):

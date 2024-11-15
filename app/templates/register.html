@@ -16,7 +16,7 @@
             <button type="submit">Register</button>
         </form>
         <small id="cautionMessage"></small>
-        <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
     </div>
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 </body>

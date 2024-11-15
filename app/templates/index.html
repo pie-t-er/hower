@@ -12,7 +12,7 @@
   <body>
     <div class="top-bar">
       <h1 class="welcome">Welcome, {{ session['username'] }}!</h1>
-      <a href="{{ url_for('logout') }}" class="logout-button">Log Out</a>
+      <a href="{{ url_for('auth.logout') }}" class="logout-button">Log Out</a>
     </div>
     
     <div class="task-manager-container">
@@ -20,6 +20,7 @@
       
       <!-- Plus Button to Add Task/Event -->
       <div class="add-button-container">
+        <script type="module" src="{{ url_for('static', filename='js/ui-handlers.js') }}"></script>
         <button class="add-button" onclick="toggleDropdown()">+</button>
         <div id="dropdownMenu" class="dropdown-menu" style="display: none;">
           <button onclick="showForm('task')">Add Task</button>

@@ -1,4 +1,4 @@
-from models.extensions import db
+from .extensions import db
 
 # Event Model
 class Event(db.Model):

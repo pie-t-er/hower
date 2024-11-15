@@ -1,4 +1,3 @@
-import{ toggleTaskCompletion, editItem } from './utils.js';
 import{ deleteItem, editItem } from './api-client.js'
 
 function itineraryElement(combined_list) {
