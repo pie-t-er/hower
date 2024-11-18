@@ -1,0 +1,308 @@
+/* Global body styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container for login/register */
+.login-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 40px 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.login-container h1 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* Form styling for login/register */
+#loginForm, #registerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#loginForm input, #registerForm input {
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#loginForm input:focus, #registerForm input:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+#loginForm button, #registerForm button {
+  padding: 12px 15px;
+  font-size: 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#loginForm button:hover, #registerForm button:hover {
+  background-color: #45a049;
+}
+
+#cautionMessage {
+  display: block;
+  margin-top: 15px;
+  color: red;
+}
+
+.login-container p {
+  margin-top: 25px;
+}
+
+.login-container a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+.login-container a:hover {
+  text-decoration: underline;
+}
+
+/* Container for the task manager */
+.task-manager-container {
+  max-width: 75%;
+  margin: 8% auto;
+  padding: 40px 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+}
+
+.task-manager-container h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+/* Adjusting the task form to display inputs side by side */
+#taskForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+
+.form-row input[type="text"],
+.form-row input[type="date"],
+.form-row input[type="time"],
+.form-row input[type="color"],
+.form-row input[type="range"] {
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.form-row input:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+/* Styling for the range input (priority slider) */
+.form-row input[type="range"] {
+  flex: 2;
+  padding: 5px;
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none;
+}
+
+/* Track and thumb styles for WebKit browsers (Chrome, Safari) */
+.form-row input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  background: #4CAF50; /* Green color for the track */
+  border-radius: 5px;
+}
+
+.form-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #4CAF50; /* Green thumb */
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -6px; /* Center the thumb with the track */
+}
+
+/* Track and thumb styles for Firefox */
+.form-row input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  background: #4CAF50; /* Green color for the track */
+  border-radius: 5px;
+}
+
+.form-row input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #4CAF50; /* Green thumb */
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Track and thumb styles for Internet Explorer and Edge */
+.form-row input[type="range"]::-ms-track {
+  width: 100%;
+  height: 8px;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+.form-row input[type="range"]::-ms-fill-lower {
+  background: #4CAF50; /* Green color for the track */
+}
+
+.form-row input[type="range"]::-ms-fill-upper {
+  background: #4CAF50; /* Green color for the track */
+}
+
+.form-row input[type="range"]::-ms-thumb {
+  width: 20px;
+  height: 20px;
+  background: #4CAF50; /* Green thumb */
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Styling for the slider container */
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 2;
+}
+
+#priorityValue {
+  font-size: 16px;
+  margin-left: 10px;
+  align-self: center;
+}
+
+/* Styling for the color picker container */
+.color-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.color-label {
+  margin-right: 10px;
+}
+
+#taskColor {
+  cursor: pointer;
+}
+
+/* Styling the Add Task button */
+#taskForm button {
+  padding: 12px 20px;
+  font-size: 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  align-self: center;
+}
+
+#taskForm button:hover {
+  background-color: #45a049;
+}
+
+/* Styling the task list */
+#taskList {
+  margin-top: 30px;
+  list-style-type: none;
+  padding: 0;
+}
+
+#taskList li {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-left: 5px solid #4CAF50; /* Default border color */
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#taskList .task-details {
+  display: flex;
+  flex-direction: column;
+}
+
+#taskList .task-details p {
+  margin: 2px 0;
+}
+
+/* Task color indicator */
+.task-color {
+  font-size: 24px;
+  margin-left: 15px;
+}
+
+/* Style for the top bar */
+.top-bar {
+  position: fixed;               /* Stays at the top */
+  top: 20px;
+  right: 20px;                   /* Align to the right */
+  left: 20px;                    /* Padding on the left */
+  z-index: 9999;                 /* Ensures it's on top of other elements */
+  display: flex;
+  justify-content: space-between; /* Space between welcome and logout */
+  align-items: center;           /* Align items vertically */
+}
+
+/* Centered welcome message (as a title) */
+.welcome {
+  text-align: left;   
+  font-family: 'Helvetica Neue', sans-serif;
+  color: #333;                   /* Dark color for visibility on white background */
+  flex-grow: 1;                 
+  padding-left: 20px;            /* Optional padding to space from the edge */
+}
+
+/* Style for the logout button */
+.logout-button, .views-button {
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  margin-right: 20px;
+}
+
+.logout-button:hover {
+  background-color: #d32f2f;     /* Darker red on hover */
+}
