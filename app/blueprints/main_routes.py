@@ -14,6 +14,12 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html', username=session['username'])
 
+@main_bp.route('/matrix')
+def matrix():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('matrix.html', username=session['username'])
+
 @main_bp.route('/api/returnAll', methods=['GET'])
 def returnAll():
     if 'user_id' not in session:

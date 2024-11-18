@@ -3,6 +3,7 @@ function loadTasksView() {
     fetch('/api/tasks')
         .then(response => response.json())
         .then(tasks => {
+            console.log('tasks imported')
             const taskList = document.getElementById('taskList');
             taskList.innerHTML = '';  // Clear the list before re-populating it
             tasks.forEach(task => {
@@ -85,6 +86,7 @@ function handleTaskClick(taskElement) {
         });
 
 }
+
 function openEditFormView(task, colorButton, li) {
     const editFormContainer = document.getElementById('editTaskFormContainer');
     const newFormContainer = document.getElementById('taskFormContainer');
@@ -175,6 +177,7 @@ function editTaskView() {
         alert(error.error || 'An error occurred while editing the task.');
     });
 }
+
 function addTaskView() {
   const taskInput = document.getElementById('taskInput');
   const task = taskInput.value.trim();
@@ -241,8 +244,8 @@ function addTaskView() {
       alert('Task description cannot be empty.');
   }
 }
-function toggleTaskForm() {
 
+function toggleTaskForm() {
     const formContainer = document.getElementById('taskFormContainer');
     const editFormContainer = document.getElementById('editTaskFormContainer'); // Add this line
     const matrix = document.getElementById('matrix');

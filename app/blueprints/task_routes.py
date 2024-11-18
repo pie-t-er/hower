@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 import logging
-from datetime import datetime
+from datetime import date, time, datetime
+from sqlalchemy.sql.expression import nullslast
 
 from ..models import Task, db
 
@@ -142,3 +143,69 @@ def modify_task(task_id):
             db.session.rollback()
             logging.error(f"Error deleting task: {e}")
             return jsonify({"error": "An error occurred while deleting the task."}), 500
+
+'''
+@task_bp.route('/api/tasks/out', methods=['GET'])
+def export_tasks():
+    try:
+        tasks = Task.query.all()  # Fetch all tasks
+        return jsonify([task.to_dict() for task in tasks])  # Return as JSON
+    except Exception as e:
+        logging.error(f"Error fetching tasks: {e}")
+        return jsonify({"error": "An error occurred while fetching tasks."}), 500
+
+@task_bp.route('/api/tasks/in', methods=['POST'])
+def import_tasks():
+    data = request.get_json()  # Get the JSON data from the request
+    if not data or not isinstance(data, list):
+        return jsonify({"error": "Invalid data format. Expected a list of tasks."}), 400
+
+    tasks = []
+    for item in data:
+        # Extract task fields
+        content = item.get('task')
+        location = item.get('location')
+        due_date_str = item.get('due_date')
+        due_time_str = item.get('due_time')
+        priority = item.get('priority')
+        color = item.get('color')
+        user_id = item.get('user_id')
+        # Validate and parse due_date
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({"error": f"Invalid due_date format for task '{content}'. Use YYYY-MM-DD."}), 400
+
+        # Validate and parse due_time
+        due_time = None
+        if due_time_str:
+            try:
+                due_time = datetime.strptime(due_time_str, '%H:%M').time()
+            except ValueError:
+                return jsonify({"error": f"Invalid due_time format for task '{content}'. Use HH:MM."}), 400
+
+        # Create a new Task instance
+        new_task = Task(
+            content=content.strip(),
+            location=location if location else None,
+            due_date=due_date,
+            due_time=due_time,
+            priority=priority if priority else None,
+            color=color if color else None,
+            user_id=user_id,  # Use the default user for simplicity
+        )
+
+        tasks.append(new_task)  # Add to the list of tasks
+
+    # Add and commit to the database
+    try:
+        db.session.add_all(tasks)  # Add all tasks to the session
+        db.session.commit()
+        return jsonify({"message": f"{len(tasks)} tasks imported successfully."}), 201
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error importing tasks: {e}")
+        return jsonify({"error": "An error occurred while importing tasks."}), 500
+'''
