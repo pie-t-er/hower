@@ -20,6 +20,12 @@ def matrix():
         return redirect(url_for('login'))
     return render_template('matrix.html', username=session['username'])
 
+@main_bp.route('/calendar')
+def calendar():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('calendar.html', username=session['username'])
+
 @main_bp.route('/api/returnAll', methods=['GET'])
 def returnAll():
     if 'user_id' not in session:

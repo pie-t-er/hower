@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weekly Timeline</title>
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/calendar.css') }}"
+  />
+</head>
+<body>
+  <div class="top-bar">
+    <h1 class="welcome">Welcome, {{ session['username'] }}!</h1>
+    <a href="{{ url_for('auth.logout') }}" class="logout-button">Log Out</a>
+    <a href="{{ url_for('main.matrix') }}" class="views-button">Matrix</a>
+    <a href="{{ url_for('main.index') }}" class="views-button">Itinerary</a>
+  </div>
+
+  <div class="container">
+      <div class="header">
+          <h1>Weekly Schedule</h1>
+          <div class="nav-buttons">
+              <button class="nav-btn" onclick="previousWeek()">Last Week</button>
+              <button class="nav-btn" onclick="nextWeek()">Next Week</button>
+          </div>
+        </div>
+
+        <div class="timeline" id="timeline-container">
+            <div class="timeline-header">
+                <div class="time-header"></div> <!-- Empty corner cell -->
+            </div>
+            <div class="timeline-body" id="timeline-body">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+</body>
+</html>

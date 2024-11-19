@@ -13,7 +13,8 @@
     <div class="top-bar">
       <h1 class="welcome">Welcome, {{ session['username'] }}!</h1>
       <a href="{{ url_for('auth.logout') }}" class="logout-button">Log Out</a>
-      <a href="{{ url_for('main.matrix') }}" class="views-button">View tasks</a>
+      <a href="{{ url_for('main.matrix') }}" class="views-button">Matrix</a>
+      <a href="{{ url_for('main.calendar') }}" class="views-button">Calendar</a>
     </div>
     
     <div class="task-manager-container">
