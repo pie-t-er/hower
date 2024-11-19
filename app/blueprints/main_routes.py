@@ -45,12 +45,23 @@ def returnAll():
         # Concatenate tasks and events into a single list
         combined_list = tasks + events
 
-        # Sort the combined list by date and time, with null handling
+        # Sort the combined list with priority consideration
         combined_list.sort(key=lambda item: (
-            item.due_date if isinstance(item, Task) and item.due_date else datetime.max.date(),
-            item.event_date if isinstance(item, Event) and item.event_date else datetime.max.date(),
-            item.due_time if isinstance(item, Task) and item.due_time else datetime.min.time(),
-            item.event_time if isinstance(item, Event) and item.event_time else datetime.min.time()
+            # First sort by date
+            item.due_date if isinstance(item, Task) and item.due_date else 
+            item.event_date if isinstance(item, Event) and item.event_date else 
+            datetime.max.date(),
+            
+            # Then by time
+            item.due_time if isinstance(item, Task) and item.due_time else 
+            item.event_time if isinstance(item, Event) and item.event_time else 
+            datetime.min.time(),
+            
+            # Then by priority (negative to maintain desc order, 0 for events)
+            -(item.priority if isinstance(item, Task) else 5),
+            
+            # Finally by ID
+            item.id
         ))
 
         
