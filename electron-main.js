@@ -47,7 +47,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-    flask = spawn('python', [path.join(__dirname, 'app.py')]);
+    flask = spawn('python', [path.join(__dirname, 'run.py')]);
     flask.stdout.on('data', (data) => {
         console.log(`Flask server: \n${data}`);
     });

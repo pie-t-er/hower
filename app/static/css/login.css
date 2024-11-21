@@ -1,0 +1,67 @@
+/* Container for login/register */
+.login-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 40px 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.login-container h1 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* Form styling for login/register */
+#loginForm, #registerForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#loginForm input, #registerForm input {
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#loginForm input:focus, #registerForm input:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+#loginForm button, #registerForm button {
+  padding: 12px 15px;
+  font-size: 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#loginForm button:hover, #registerForm button:hover {
+  background-color: #45a049;
+}
+
+#cautionMessage {
+  display: block;
+  margin-top: 15px;
+  color: red;
+}
+
+.login-container p {
+  margin-top: 25px;
+}
+
+.login-container a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+.login-container a:hover {
+  text-decoration: underline;
+}

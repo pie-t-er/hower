@@ -1,4 +1,4 @@
-from models.extensions import db
+from .extensions import db
 
 # User Model for Authentication
 class User(db.Model):
