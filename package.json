@@ -10,7 +10,6 @@
   "author": "The Null Terminators",
   "license": "MIT",
   "devDependencies": {
-
-    "electron": "^32.2.0"
+    "electron": "^32.2.3"
   }
 }

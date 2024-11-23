@@ -5,10 +5,11 @@ function loadTasksView() {
         .then(tasks => {
             const taskList = document.getElementById('taskList');
             taskList.innerHTML = '';  // Clear the list before re-populating it
+
             tasks.forEach(task => {
                 const li = document.createElement('li');
                 li.setAttribute('data-task-id', task.id);
-                li.classList.add('task-item');  // Add class to the list item
+                li.classList.add('task-item');
 
                 // Task Details Container
                 const detailsDiv = document.createElement('div');
@@ -45,10 +46,10 @@ function loadTasksView() {
                 // Task Color Button
                 const colorButton = document.createElement('button');
                 colorButton.classList.add('task-color');
-                colorButton.style.backgroundColor = task.color || '#ccc'; // Set the background color
-                colorButton.setAttribute('data-task-id', task.id); // Add the task ID as a data attribute
+                colorButton.style.backgroundColor = task.color || '#ccc';
+                colorButton.setAttribute('data-task-id', task.id);
                 colorButton.onclick = (e) => {
-                    e.stopPropagation(); // Prevent triggering the click event on the li element
+                    e.stopPropagation();
                     openEditFormView(task, colorButton, li);
                 };
 
@@ -59,6 +60,9 @@ function loadTasksView() {
 
                 taskList.appendChild(li);
             });
+
+            // Draw dots on the canvas using the fetched tasks
+            drawDots(tasks);
         })
         .catch(error => console.error('Error loading tasks:', error));
 }
@@ -73,17 +77,22 @@ function handleTaskClick(taskElement) {
     // Then, add the "highlighted" class to the clicked task
     highlightedTaskId = taskElement.getAttribute('data-task-id');
     taskElement.classList.add('highlighted');
+    
 
-     fetch('/api/tasks')
+    
+    document.getElementById('prioritySliderContainer').style.display = 'flex';
+    fetch(`/api/tasks/${highlightedTaskId}`)
         .then(response => response.json())
-        .then(tasks => {
-            console.log("Fetched tasks:", tasks); // Log the tasks
-            drawDots(tasks);  // Redraw the dots based on updated tasks
+        .then(task => {
+            document.getElementById('prioritySlider').value = task.priority || 5;
+            drawDots([task]); // Redraw dots on selection
         })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        });
+        .catch(error => console.error('Error fetching task:', error));
+}
 
+function clearSelection() {
+    highlightedTaskId = null;
+    document.getElementById('prioritySliderContainer').style.display = 'none';
 }
 function openEditFormView(task, colorButton, li) {
     const editFormContainer = document.getElementById('editTaskFormContainer');
@@ -325,4 +334,46 @@ function drawDots(tasks) {
 }
 
 // Load tasks when the page loads
-document.addEventListener('DOMContentLoaded', loadTasksView);
+document.addEventListener("DOMContentLoaded", () => {
+    // Load tasks and draw dots when the page loads
+    loadTasksView();
+
+    // Set up slider height adjustment
+    const matrixImage = document.getElementById("matrix");
+    const prioritySlider = document.getElementById("prioritySliderContainer");
+
+    function adjustSliderHeight() {
+        if (matrixImage) {
+            const matrixHeight = matrixImage.clientHeight;
+            prioritySlider.style.height = `${matrixHeight}px`;
+            document.getElementById("prioritySlider").style.height = `${matrixHeight}px`;
+        }
+    }
+
+    // Initial adjustment and on window resize
+    adjustSliderHeight();
+    window.addEventListener("resize", adjustSliderHeight);
+});
+
+
+document.getElementById('prioritySlider').addEventListener('input', (event) => {
+    const newPriority = event.target.value;
+    loadTasksView();
+    if (highlightedTaskId) {
+        fetch(`/api/tasks/${highlightedTaskId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ priority: newPriority })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to update task');
+            return response.json();
+        })
+        .then(updatedTask => {
+            console.log("Priority updated:", updatedTask.priority);
+            loadTasksView(); // Reload to reflect updates
+            drawDots([updatedTask]); // Update dot position on matrix
+        })
+        .catch(error => console.error('Error updating priority:', error));
+    }
+});

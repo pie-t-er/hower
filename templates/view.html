@@ -48,12 +48,19 @@
                 <button type="submit">Add Task</button>
             </form>
         </div>
-        <div id="matrixContainer"  >
+        <div id="matrixContainer">
             <img id="matrix" src="{{ url_for('static', filename='assets/matrix.jpg') }}" alt="matrix">
             <canvas id="taskCanvas" class="matrix-canvas"></canvas>
+        
+           
+            <div id="prioritySliderContainer" style="display:none;">
+                <label for="prioritySlider" style="writing-mode: vertical-rl;">Priority</label>
+                <input type="range" id="prioritySlider" min="1" max="10" value="5" orient="vertical" style="width: 20px;">
+                <span id="priorityLabel">Priority</span>
+            </div>
         </div>
+        
     </div>
-
 
 
     <script src="{{ url_for('static', filename='js/views.js') }}"></script>
