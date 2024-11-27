@@ -39,7 +39,12 @@ def handle_tasks():
         due_time_str = data.get('due_time')
         priority = data.get('priority')
         color = data.get('color')
-
+        notification_offset = data.get('notification_offset')
+        if notification_offset is not None:
+            try:
+                notification_offset = int(notification_offset)
+            except ValueError:
+                return jsonify({"error": "Invalid notification offset."}), 400
         # Parse and validate the due date and time
         due_date, due_time = None, None
         if due_date_str:
@@ -65,7 +70,8 @@ def handle_tasks():
             due_time=due_time,
             priority=priority if priority else None,
             color=color if color else None,
-            user_id=user_id  # Associate the task with the logged-in user
+            user_id=user_id,  # Associate the task with the logged-in user
+            notification_offset=notification_offset,
         )
 
         try:
@@ -125,7 +131,13 @@ def modify_task(task_id):
             if color and (not isinstance(color, str) or not color.startswith('#') or len(color) not in [4, 7]):
                 return jsonify({"error": "Invalid color format. Use HEX codes like #FFF or #FFFFFF."}), 400
             task.color = color
-
+        if 'notification_offset' in data:
+            notification_offset = data['notification_offset']
+            if notification_offset is not None:
+                try:
+                    task.notification_offset = int(notification_offset)
+                except ValueError:
+                    return jsonify({"error": "Invalid notification offset."}), 400
         try:
             db.session.commit()
             return jsonify({"message": "Task updated successfully", "task": task.to_dict()}), 200

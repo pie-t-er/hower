@@ -30,7 +30,12 @@ def handle_events():
         time = data.get('time')
         end_date = data.get('eDate')
         end_time = data.get('eTime')
-
+        notification_offset = data.get('notification_offset')
+        if notification_offset is not None:
+            try:
+                notification_offset = int(notification_offset)
+            except ValueError:
+                return jsonify({"error": "Invalid notification offset."}), 400
         # Validate and parse date
         if date:
             try:
@@ -67,7 +72,8 @@ def handle_events():
             event_time=time if time else None,
             end_date=end_date if end_date else None,
             end_time=end_time if end_time else None,
-            user_id=user_id
+            user_id=user_id,
+            notification_offset=notification_offset,
         )
 
         print('New event:', new_event)
@@ -158,7 +164,13 @@ def modify_event(event_id):
                 event.color = color
             else:
                 event.color = None
-
+        if 'notification_offset' in data:
+            notification_offset = data['notification_offset']
+            if notification_offset is not None:
+                try:
+                    event.notification_offset = int(notification_offset)
+                except ValueError:
+                    return jsonify({"error": "Invalid notification offset."}), 400
         try:
             db.session.commit()
             return jsonify({
