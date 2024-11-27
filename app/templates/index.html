@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hower</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/itinerary.css') }}"
+    />
+  </head>
+  <body>
+    <div class="top-bar">
+      <h1 class="welcome">Welcome, {{ session['username'] }}!</h1>
+      <a href="{{ url_for('auth.logout') }}" class="logout-button">Log Out</a>
+      <a href="{{ url_for('main.matrix') }}" class="views-button">View tasks</a>
+    </div>
+    
+    <div class="task-manager-container">
+      <h1>Hower</h1>
+      
+      <!-- Plus Button to Add Task/Event -->
+      <div class="add-button-container">
+        <script type="module" src="{{ url_for('static', filename='js/ui-handlers.js') }}"></script>
+        <button class="add-button" onclick="toggleDropdown()">+</button>
+        <div id="dropdownMenu" class="dropdown-menu" style="display: none;">
+          <button onclick="showForm('task')">Add Task</button>
+          <button onclick="showForm('event')">Add Event</button>
+        </div>
+      </div>
+
+      <!-- Task Form -->
+      <form id="taskForm" style="display: none;" onsubmit="addTask(); return false;">
+        <h2>Add Task</h2>
+        <!-- Form Row 1 -->
+        <div class="form-row">
+          <input type="text" id="taskInput" placeholder="Enter a new task" required />
+          <input type="text" id="taskLocation" placeholder="Location" />
+          <input type="date" id="taskDueDate" />
+          <input type="time" id="taskDueTime" />
+        </div>
+        <!-- Form Row 2 -->
+        <div class="form-row">
+          <div class="slider-container">
+            <label for="taskPriority">Priority:</label>
+            <input
+              type="range"
+              id="taskPriority"
+              min="1"
+              max="10"
+              value="5"
+              oninput="updatePriorityValue(this.value)"
+            />
+            <span id="priorityValue">5</span>
+            <!-- Display the current value of the slider -->
+          </div>
+          <div class="color-container">
+            <label for="taskColor" class="color-label">Choose Color:</label>
+            <input type="color" id="taskColor" value="#4CAF50" />
+          </div>
+          <button type="submit">Add Task</button>
+        </div>
+      </form>
+
+      <!-- Event Form -->
+      <form id="eventForm" style="display: none;" onsubmit="addEvent(); return false;">
+        <h2>Add Event</h2>
+        <!-- Form Row 1 -->
+        <div class="form-row">
+          <input type="text" id="eventInput" placeholder="Event Name" required />
+          <input type="date" id="eventDate" required />
+          <input type="time" id="eventTime" required />
+          <input type="text" id="eventLocation" placeholder="Location" />
+        </div>
+        <!-- Form Row 2 -->
+        <div class="form-row">
+          <textarea id="eventDescription" placeholder="Event Description"></textarea>
+          <input type="date" id="endDate"/>
+          <input type="time" id="endTime"/>
+          <button type="submit">Add Event</button>
+        </div>
+      </form>
+
+      <ul id="list"></ul>
+    </div>
+
+    <script type="module" src="{{ url_for('static', filename='js/itinerary.js') }}"></script>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <input type="file" name="file">
+      <input type="submit" value="Upload .ics">
+    </form>
+    <a href="/download">Download Exported .ics</a>
+  </body>
+</html>
