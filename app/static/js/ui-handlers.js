@@ -1,4 +1,4 @@
-import{ deleteItem, editItem } from './api-client.js'
+import{ deleteItem, editTask, editEvent, addTask, addEvent } from './api-client.js'
 
 function itineraryElement(combined_list) {
   const list = document.getElementById('list');
@@ -73,7 +73,7 @@ function itineraryElement(combined_list) {
       const editButton = document.createElement('button');
       editButton.classList.add('edit-button');
       editButton.textContent = 'Edit';
-      editButton.addEventListener('click', () => editItem(item.id));
+      editButton.addEventListener('click', () => toggleEditForm(item.id, item.type));
       actionsDiv.appendChild(editButton);
 
       const deleteButton = document.createElement('button');
@@ -118,9 +118,13 @@ function showForm(type) {
   const eventForm = document.getElementById("eventForm");
 
   if (type === "task") {
-    moveFormToElement("taskForm", "formAnchor")
+    taskForm.reset();
+    taskForm.onsubmit = addTask;
+    moveFormToElement("taskForm", "formAnchor");
   } else if (type === "event") {
-    moveFormToElement("eventForm", "formAnchor")
+    eventForm.reset();
+    eventForm.onsubmit = addEvent;
+    moveFormToElement("eventForm", "formAnchor");
   }
   document.getElementById("dropdownMenu").style.display = "none";
 }
@@ -132,7 +136,6 @@ function hideForms() {
   document.getElementById("dropdownMenu").style.display = "none";
 }
 
-// Placeholder function for task completion, this function is unused
 function toggleTaskCompletion(id, isCompleted) {
     console.log(`Task ${id} completion status: ${isCompleted}`);
     // Implement the update API call here
@@ -142,12 +145,26 @@ function toggleTaskCompletion(id, isCompleted) {
   }
 
 function toggleEditForm(id, type) {
-    const itemElement = document.getElementById(`item-${id}`);
+    const taskForm = document.getElementById("taskForm");
+    const eventForm = document.getElementById("eventForm");
+    const dropdownMenu = document.getElementById('dropdownMenu');
 
+    if (dropdownMenu.display === 'flex') {
+      toggleDropdown();
+    }
     if (type === "task") {
-        moveFormToElement(taskForm, itemElement)
-    } else if (type === "event") {
-        moveFormToElement(eventForm, itemElement)
+        taskForm.onsubmit = function (event) {
+          event.preventDefault();
+          editTask(id); }
+        document.getElementById("taskSubmit").textContent = "Edit Task"
+        moveFormToElement("taskForm", `item-${id}`);
+    } 
+    else if (type === "event") {
+        eventForm.onsubmit = function (event) {
+          event.preventDefault();
+          editEvent(id); }
+        document.getElementById("eventSubmit").textContent = "Edit Event"
+        moveFormToElement("eventForm", `item-${id}`);
     }
 }
 
@@ -164,4 +181,4 @@ function moveFormToElement(formId, targetElementId) {
     }
   }
 
-export { itineraryElement, toggleDropdown, showForm, toggleEditForm };
+export { itineraryElement, toggleDropdown, showForm, toggleEditForm, moveFormToElement };
