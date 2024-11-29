@@ -1,6 +1,15 @@
 @import './components/buttons.css';
 @import './components/header.css';
 
+/* Color Palette for Tasks? CSS HEX:
+--picton-blue: #00abffff;
+--candy-apple-red: #ff160aff;
+--orange-wheel: #ff7f11ff;
+--jonquil: #ffce0bff;
+--sky-blue: #9ad4eeff;
+--mantis: #61b861ff;
+*/
+
 * {
   margin: 0;
   padding: 0;

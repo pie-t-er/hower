@@ -118,9 +118,9 @@ function showForm(type) {
   const eventForm = document.getElementById("eventForm");
 
   if (type === "task") {
-      taskForm.style.display = "block";
+    moveFormToElement("taskForm", "formAnchor")
   } else if (type === "event") {
-      eventForm.style.display = "block";
+    moveFormToElement("eventForm", "formAnchor")
   }
   document.getElementById("dropdownMenu").style.display = "none";
 }
@@ -141,4 +141,27 @@ function toggleTaskCompletion(id, isCompleted) {
     }
   }
 
-export { itineraryElement, toggleDropdown, showForm };
+function toggleEditForm(id, type) {
+    const itemElement = document.getElementById(`item-${id}`);
+
+    if (type === "task") {
+        moveFormToElement(taskForm, itemElement)
+    } else if (type === "event") {
+        moveFormToElement(eventForm, itemElement)
+    }
+}
+
+// Utility Function to Relocate a Form
+function moveFormToElement(formId, targetElementId) {
+    const form = document.getElementById(formId);
+    const targetElement = document.getElementById(targetElementId);
+  
+    // Ensure the target element exists
+    if (targetElement && form) {
+      // Move the form to just below the target element
+      targetElement.insertAdjacentElement('afterend', form);
+      form.style.display = 'block'; // Ensure form is visible
+    }
+  }
+
+export { itineraryElement, toggleDropdown, showForm, toggleEditForm };

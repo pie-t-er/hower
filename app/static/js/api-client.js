@@ -38,8 +38,32 @@ function deleteItem(itemId, itemType) {
 }
 
 // This function hasn't been implemented...
-function editItem(itemId, item) {
+function editItem(itemId, itemType) {
+    // Determine the appropriate API endpoint based on item type
+    const endpoint = itemType === 'task' ? `/api/tasks/${itemId}` : `/api/events/${itemId}`;
 
+    fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+        })
+    .then(response => {
+        if (response.ok) {
+            // Remove the item from the UI after successful deletion
+            const itemElement = document.getElementById(`item-${itemId}`);
+            if (itemElement) {
+                itemElement.remove();
+            }
+            console.log(`${itemType} edited successfully.`);
+        } else {
+            // Handle errors, if any
+            response.json().then(data => {
+                console.error(data.error || `Failed to edit ${itemType}.`);
+            });
+        }
+    })
+    .catch(error => console.error(`An error occurred: ${error}`));
 }
 
 function addTask() {

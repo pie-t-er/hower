@@ -1,3 +1,22 @@
+/* Global body styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  padding: 12px 20px;
+  font-size: 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  align-self: center;
+}
+
 /* Container for login/register */
 .login-container {
   max-width: 400px;
