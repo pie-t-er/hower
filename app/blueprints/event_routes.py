@@ -5,7 +5,7 @@ from datetime import datetime
 from ..models import Event, db
 
 event_bp = Blueprint('event', __name__)
-
+# testing something
 @event_bp.route('/api/events', methods=['GET', 'POST'])
 def handle_events():
     if 'user_id' not in session:
