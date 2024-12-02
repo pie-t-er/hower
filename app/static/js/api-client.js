@@ -101,8 +101,6 @@ function addTask() {
   else {
       alert('Task description cannot be empty.');
   }
-  toggleDropdown();
-  loadItems();
 }
 
 function addEvent() {
@@ -166,8 +164,6 @@ function addEvent() {
           alert(error.error || 'An error occurred while adding the event.');
       });
   }
-  toggleDropdown();
-  loadItems();
 }
 
 function editTask(taskID) {

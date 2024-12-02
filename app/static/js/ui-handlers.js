@@ -1,4 +1,4 @@
-import{ deleteItem, editTask, editEvent, addTask, addEvent } from './api-client.js'
+import{ deleteItem, editTask, editEvent, addTask, addEvent, loadItems } from './api-client.js'
 
 function itineraryElement(combined_list) {
   const list = document.getElementById('list');
@@ -119,11 +119,23 @@ function showForm(type) {
 
   if (type === "task") {
     taskForm.reset();
-    taskForm.onsubmit = addTask;
+    taskForm.onsubmit = async function (event) {
+      event.preventDefault();
+      await addTask();
+      toggleDropdown();
+      loadItems();
+      return false;
+    };
     moveFormToElement("taskForm", "formAnchor");
   } else if (type === "event") {
     eventForm.reset();
-    eventForm.onsubmit = addEvent;
+    eventForm.onsubmit = async function (event) {
+      event.preventDefault();
+      await addEvent();
+      toggleDropdown();
+      loadItems();
+      return false;
+    };
     moveFormToElement("eventForm", "formAnchor");
   }
   document.getElementById("dropdownMenu").style.display = "none";
@@ -160,6 +172,7 @@ function toggleEditForm(id, type) {
           moveFormToElement("taskForm", "formAnchor");
           hideForms();
           loadItems();
+          return false;
         }
         document.getElementById("taskSubmit").textContent = "Edit Task"
         moveFormToElement("taskForm", `item-${id}`);
@@ -172,6 +185,7 @@ function toggleEditForm(id, type) {
           moveFormToElement("taskForm", "formAnchor");
           hideForms();
           loadItems();
+          return false;
         }
         document.getElementById("eventSubmit").textContent = "Edit Event"
         moveFormToElement("eventForm", `item-${id}`);
