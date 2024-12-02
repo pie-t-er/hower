@@ -18,4 +18,4 @@ function updatePriorityValue(value) {
 // Load tasks when the page loads
 document.addEventListener('DOMContentLoaded', loadItems);
 
-export { toggleDropdown }
+export { updatePriorityValue }

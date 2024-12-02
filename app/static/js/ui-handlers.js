@@ -155,14 +155,24 @@ function toggleEditForm(id, type) {
     if (type === "task") {
         taskForm.onsubmit = function (event) {
           event.preventDefault();
-          editTask(id); }
+          editTask(id);
+          moveFormToElement("eventForm", "formAnchor");
+          moveFormToElement("taskForm", "formAnchor");
+          hideForms();
+          loadItems();
+        }
         document.getElementById("taskSubmit").textContent = "Edit Task"
         moveFormToElement("taskForm", `item-${id}`);
     } 
     else if (type === "event") {
         eventForm.onsubmit = function (event) {
           event.preventDefault();
-          editEvent(id); }
+          editEvent(id);
+          moveFormToElement("eventForm", "formAnchor");
+          moveFormToElement("taskForm", "formAnchor");
+          hideForms();
+          loadItems();
+        }
         document.getElementById("eventSubmit").textContent = "Edit Event"
         moveFormToElement("eventForm", `item-${id}`);
     }

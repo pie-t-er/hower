@@ -92,8 +92,6 @@ function addTask() {
           dueTimeInput.value = '';
           priorityInput.value = '';
           colorInput.value = '#4CAF50'; // Reset to default color
-          toggleDropdown();
-          loadItems();
       })
       .catch(error => {
           console.error('Error adding task:', error.error || error);
@@ -103,6 +101,8 @@ function addTask() {
   else {
       alert('Task description cannot be empty.');
   }
+  toggleDropdown();
+  loadItems();
 }
 
 function addEvent() {
@@ -160,14 +160,14 @@ function addEvent() {
           timeInput.value = '';
           endDateInput.value = '';
           endTimeInput.value = '';
-          toggleDropdown();
-          loadItems();
       })
       .catch(error => {
           console.error('Error adding event:', error.error || error);
           alert(error.error || 'An error occurred while adding the event.');
       });
   }
+  toggleDropdown();
+  loadItems();
 }
 
 function editTask(taskID) {
@@ -223,8 +223,6 @@ function editTask(taskID) {
         dueTimeInput.value = '';
         priorityInput.value = '';
         colorInput.value = '#4CAF50'; // Reset to default color
-        toggleDropdown();
-        loadItems();
     })
     .catch(error => {
         console.error('Error editing task:', error.error || error);
@@ -287,8 +285,6 @@ function editEvent(eventID) {
             timeInput.value = '';
             endDateInput.value = '';
             endTimeInput.value = '';
-            toggleDropdown();
-            loadItems();
         })
         .catch(error => {
             console.error('Error editing event:', error.error || error);
