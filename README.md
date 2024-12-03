@@ -8,7 +8,7 @@ Check the requirements.txt file to make sure you have all necessary dependencies
 In the terminal, navigate to the repository, and run tset test:
 
 ```
-python app.py
+python run.py
 ```
 
 It should provide an address for you to access the app on your browser, paste that address into your browser (preferably Chrome) and run as a basic html/css website.
@@ -19,6 +19,10 @@ In the terminal, navigate to the repository, and run:
 
 ```
 npm start
-```
+``` 
 
 The application should open in a new window.
+
+## Note on using the app
+
+In our current code base, when you start the Electron app with npm, it has already included the start of our backend Flask server on port 5000. Therefore, if you want to start the two server separately, make sure to comment the part in our electron-main.js file that start the python backend server.
