@@ -27,3 +27,19 @@ class Event(db.Model):
             'type': 'event',
             'notification_offset': self.notification_offset,
         }
+       
+    def to_dictTimefill(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'location': self.location if self.location else None,
+            'description': self.description if self.description else None,
+            'date': str(self.event_date) if self.event_date else None,
+            'time': str(self.event_time) if self.event_time else None,
+            'eTime': str(self.end_time) if self.end_time else None,
+            'eDate': str(self.end_date) if self.end_date else None,
+            'user_id': self.user_id,
+            'type': 'event',
+            'notification_offset': self.notification_offset,
+        }
+    

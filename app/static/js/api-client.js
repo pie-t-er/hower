@@ -1,10 +1,9 @@
+
 import { itineraryElement, toggleDropdown } from './ui-handlers.js';
 const { ipcRenderer } = require('electron');
 
 function loadItems() {
-  fetch('api/returnAll', {
-    credentials: 'include', // Include credentials to ensure cookies are sent
-  })
+  fetch('api/returnAll')
     .then(response => response.json())
     .then(combined_list => {
       itineraryElement(combined_list);
@@ -48,7 +47,7 @@ function editItem(itemId, item) {
 
 function addTask() {
   const taskInput = document.getElementById('taskInput');
-  const taskContent = taskInput.value.trim();
+  const task = taskInput.value.trim();
 
   const locationInput = document.getElementById('taskLocation');
   const location = locationInput.value.trim();
@@ -131,7 +130,7 @@ function addTask() {
 
 function addEvent() {
   const eventInput = document.getElementById('eventInput');
-  const eventTitle = eventInput.value.trim();
+  const event = eventInput.value.trim();
 
   const locationInput = document.getElementById('eventLocation');
   const location = locationInput.value.trim();

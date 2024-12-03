@@ -1,4 +1,6 @@
+
 const { ipcRenderer } = require('electron');
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
@@ -19,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-    
             try {
                 const response = await fetch('/api/login', {
                     method: 'POST',
@@ -68,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({ username, password }),
                 });
-    
                 if (response.ok) {
                     displayCautionMessage('Registration successful. Please log in.', true);
                     window.location.href = '/login';  // Redirect to login page

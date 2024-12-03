@@ -117,11 +117,13 @@ def modify_task(task_id):
                 task.due_date = None
         if 'due_time' in data:
             due_time_str = data['due_time']
+            if len(due_time_str) > 5:
+                due_time_str = due_time_str[0:5]
             if due_time_str:
                 try:
                     task.due_time = datetime.strptime(due_time_str, '%H:%M').time()
                 except ValueError:
-                    return jsonify({"error": "Invalid due_time format. Use HH:MM."}), 400
+                    return jsonify({"error": f"Invalid due_time format '{len(due_time_str)}'. Use HH:MM."}), 400
             else:
                 task.due_time = None
         if 'priority' in data:
@@ -221,3 +223,22 @@ def import_tasks():
         logging.error(f"Error importing tasks: {e}")
         return jsonify({"error": "An error occurred while importing tasks."}), 500
 '''
+@task_bp.route('/api/tasks/date/<string:date_str>', methods=['GET'])
+def get_tasks_by_date(date_str):
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    user_id = session['user_id']
+
+    try:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    tasks = Task.query.filter_by(user_id=user_id, due_date=target_date).order_by(
+        Task.priority.desc(),
+        nullslast(Task.due_time.asc()),
+        Task.id.asc()
+    ).all()
+    
+    return jsonify([task.to_dict() for task in tasks]), 200

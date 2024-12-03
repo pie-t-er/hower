@@ -14,7 +14,7 @@ def handle_events():
     user_id = session['user_id']
 
     if request.method == 'GET':
-        events = Event.query.order_by(Event.event_date.asc(), Event.event_time.asc(), Event.id.asc()).all()
+        events = Event.query.filter_by(user_id=user_id).order_by(Event.event_date.asc(), Event.event_time.asc(), Event.id.asc()).all()
         return jsonify([event.to_dict() for event in events])
     
     elif request.method == 'POST':
@@ -84,7 +84,7 @@ def handle_events():
             db.session.commit()
             return jsonify({
                 "message": "Event added successfully",
-                "event": new_event.to_dict()
+                "event": new_event.to_dictTimefill()
             }), 201
         except Exception as e:
             db.session.rollback()
@@ -110,8 +110,8 @@ def modify_event(event_id):
             return jsonify({"error": "No data provided"}), 400
 
         # Update fields if they exist in the request
-        if 'event' in data:
-            event.content = data['event'].strip()
+        if 'title' in data:
+            event.title = data['title'].strip()
         
         if 'location' in data:
             event.location = data['location'] if data['location'] else None
@@ -120,17 +120,17 @@ def modify_event(event_id):
             date = data['date']
             if date:
                 try:
-                    event.date = datetime.strptime(date, '%Y-%m-%d').date()
+                    event.event_date = datetime.strptime(date, '%Y-%m-%d').date()
                 except ValueError:
                     return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
             else:
                 event.date = None
         
         if 'time' in data:
-            time = data['time']
+            time = data['time'][0:5]
             if time:
                 try:
-                    event.time = datetime.strptime(time, '%H:%M').time()
+                    event.event_time = datetime.strptime(time, '%H:%M').time()
                 except ValueError:
                     return jsonify({"error": "Invalid time format. Use HH:MM."}), 400
             else:
@@ -140,14 +140,14 @@ def modify_event(event_id):
             date = data['eDate']
             if date:
                 try:
-                    event.end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+                    event.end_date = datetime.strptime(date, '%Y-%m-%d').date()
                 except ValueError:
                     return jsonify({"error": "Invalid end date format. Use YYYY-MM-DD."}), 400
             else:
                 event.end_date = None
 
         if 'eTime' in data:
-            end = data['eTime']
+            end = data['eTime'][0:5]
             if end:
                 try:
                     event.end_time = datetime.strptime(end, '%H:%M').time()
@@ -155,7 +155,6 @@ def modify_event(event_id):
                     return jsonify({"error": "Invalid end time format. Use HH:MM."}), 400
             else:
                 event.end_time = None
-        
         if 'color' in data:
             color = data['color']
             if color:
@@ -175,18 +174,38 @@ def modify_event(event_id):
             db.session.commit()
             return jsonify({
                 "message": "Event updated successfully",
-                "event": event.to_dict()
+                "event": event.to_dictTimefill()
             }), 200
         except Exception as e:
             db.session.rollback()
-            return jsonify({"error": "An error occurred while updating the event."}), 500
+            return jsonify({"error": f"An error occurred while updating the event: {e}"}), 500
     
     # deleting an event
     elif request.method == 'DELETE':
         try:
             db.session.delete(event)
             db.session.commit()
-            return jsonify({"message": "Event deleted successfully"}), 200
         except Exception as e:
             db.session.rollback()
+            logging.error(f"Error deleting event: {e}")
             return jsonify({"error": "An error occurred while deleting the event."}), 500
+        
+@event_bp.route('/api/events/active/<string:date>', methods=['GET'])
+def get_active_events(date):
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session['user_id']
+
+    try:
+        query_date = datetime.strptime(date, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD."}), 400
+
+    events = Event.query.filter(
+        Event.user_id == user_id,
+        Event.event_date <= query_date,
+        (Event.end_date >= query_date) | (Event.end_date.is_(None))
+    ).order_by(Event.event_date.asc(), Event.event_time.asc(), Event.id.asc()).all()
+
+    return jsonify([event.to_dict() for event in events])

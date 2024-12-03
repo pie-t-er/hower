@@ -7,12 +7,26 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/matrix.css') }}">
 </head>
 <body>
+    <div id="sidebarContainer">
     <div id="sidebar">
+        <div id="searchContainer">
+            <input type="text" id="searchInput" placeholder="Search tasks..." oninput="filterTasks()">
+        </div>
         <div id="taskListContainer">
             <ul id="taskList"></ul>
         </div>
     </div>
-
+    <div id="eventSidebar" style = "display:none">
+        <div id="eventSearchContainer">
+            <input type="text" id="eventSearchInput" placeholder="Search events..." oninput="filterEvents()">
+        </div>
+        <div id="eventListContainer">
+            <ul id="eventList"></ul>
+        </div>
+        
+    </div>
+    <button id="toggleSidebarButton" onclick="toggleSidebar()">Toggle Sidebar</button>
+</div>
     <div id="centerContainer">
          <h1>Task Manager</h1>
          <div class="button-container">
@@ -59,5 +73,56 @@
 
 
     <script src="{{ url_for('static', filename='js/matrix.js') }}"></script>
+    
+        <div id="editEventFormContainer" style="display:none;">
+            <h2>Edit Event</h2>
+            <form id="editEventForm" onsubmit="editEventView(); return false;">
+                <input type="hidden" id="editEventId"> <!-- Hidden field for event ID -->
+                <input type="text" id="editEventInput" placeholder="Edit event" required>
+                <input type="text" id="editEventLocation" placeholder="Location (optional)">
+                <input type="date" id="editEventDueDate">
+                <input type="time" id="editEventDueTime">
+                <input type="date" id="editEventEndDate">
+                <input type="time" id="editEventEndTime">
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+        <div id="calendarContainer" style="display: none;">
+            <div id="calendarHeader">
+                <button id="prevMonth" onclick="changeMonth(-1)">&#9664;</button>
+                <span id="monthYear"></span>
+                <button id="nextMonth" onclick="changeMonth(1)">&#9654;</button>
+            </div>
+            <div id="calendar">
+                <div class="day-names">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+                <div id="calendarDays" class="days"></div>
+            </div>
+        </div>
+
+        <div id="matrixContainer"  >
+            <img id="matrix" src="{{ url_for('static', filename='images/matrix.jpg') }}" alt="matrix">
+
+            <canvas id="taskCanvas" class="matrix-canvas"></canvas>
+        
+           
+            <div id="prioritySliderContainer" style="display:none;">
+                <label for="prioritySlider" style="writing-mode: vertical-rl;">Priority</label>
+                <input type="range" id="prioritySlider" min="1" max="10" value="5">
+                <span id="priorityLabel">Priority</span>
+            </div>
+        </div>
+        
+    </div>
+
+    <script src="{{ url_for('static', filename='js/matrix.js') }}"></script>
+
 </body>
 </html>
