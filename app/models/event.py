@@ -11,6 +11,7 @@ class Event(db.Model):
     end_date = db.Column(db.Date, nullable=True)
     end_time = db.Column(db.Time, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    notification_offset = db.Column(db.Integer, nullable=True)
 
     def to_dict(self):
         return {
@@ -23,8 +24,10 @@ class Event(db.Model):
             'eTime': self.end_time.isoformat() if self.end_time else None,
             'eDate': self.end_date.isoformat() if self.end_date else None,
             'user_id': self.user_id,
-            'type': 'event'
+            'type': 'event',
+            'notification_offset': self.notification_offset,
         }
+       
     def to_dictTimefill(self):
         return {
             'id': self.id,
@@ -36,6 +39,7 @@ class Event(db.Model):
             'eTime': str(self.end_time) if self.end_time else None,
             'eDate': str(self.end_date) if self.end_date else None,
             'user_id': self.user_id,
-            'type': 'event'
+            'type': 'event',
+            'notification_offset': self.notification_offset,
         }
     

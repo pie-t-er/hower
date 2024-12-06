@@ -7,11 +7,10 @@ function loadTasksView() {
             console.log('tasks imported')
             const taskList = document.getElementById('taskList');
             taskList.innerHTML = '';  // Clear the list before re-populating it
-
             tasks.forEach(task => {
                 const li = document.createElement('li');
                 li.setAttribute('data-task-id', task.id);
-                li.classList.add('task-item');
+                li.classList.add('task-item');  // Add class to the list item
 
                 // Task Details Container
                 const detailsDiv = document.createElement('div');
@@ -48,10 +47,10 @@ function loadTasksView() {
                 // Task Color Button
                 const colorButton = document.createElement('button');
                 colorButton.classList.add('task-color');
-                colorButton.style.backgroundColor = task.color || '#ccc';
-                colorButton.setAttribute('data-task-id', task.id);
+                colorButton.style.backgroundColor = task.color || '#ccc'; // Set the background color
+                colorButton.setAttribute('data-task-id', task.id); // Add the task ID as a data attribute
                 colorButton.onclick = (e) => {
-                    e.stopPropagation();
+                    e.stopPropagation(); // Prevent triggering the click event on the li element
                     openEditFormView(task, colorButton, li);
                 };
 
@@ -119,6 +118,13 @@ function clearSelection() {
 
 function openEditFormView(task, colorButton, li) {
     const editFormContainer = document.getElementById('editTaskFormContainer');
+    const newFormContainer = document.getElementById('taskFormContainer');
+    const matrix = document.getElementById('matrix');
+
+    // Hide the new task form and the matrix
+    newFormContainer.style.display = 'none';
+    matrix.style.display = 'none';
+
     document.getElementById('prioritySliderContainer').style.display = 'none';
     const matrix = document.getElementById('matrix');
     
@@ -147,7 +153,6 @@ function openEditFormView(task, colorButton, li) {
 
 
     // Show the edit form
-    
 }
 
 function closeEditFormView() {

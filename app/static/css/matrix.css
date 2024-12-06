@@ -7,6 +7,7 @@ body {
   padding: 20px;
   background-color: #f9f9f9;
 }
+
 #sidebarContainer {
     display: flex;
     flex-direction: column; /* Stack sidebars vertically */
@@ -15,7 +16,6 @@ body {
 }
 
 #sidebar, #eventSidebar {
-    
     background-color: #fff;
     padding: 10px;
     border-radius: 5px;
@@ -217,6 +217,7 @@ h1, h2 {
     padding: 0;
 }
 
+
 #taskList li, #eventList li {
     background-color: #fff;
     padding: 15px;
@@ -259,6 +260,7 @@ h1, h2 {
     transform: scale(1.05);  /* Slightly enlarge the task item */
     transition: all 0.3s ease-in-out;  /* Smooth transition for the effects */
 }
+
 .task-item, .event-item {
     background-color: #fff;
     padding: 15px;
@@ -324,6 +326,7 @@ h2 {
     gap: 10px;                 /* Add some space between the buttons */
     justify-content: center;   /* Center the buttons horizontally */
     margin-top: 20px;          /* Add space above the buttons */
+
 }
 #searchContainer, #eventSearchContainer {
     margin-bottom: 10px; /* Space below the search bar */

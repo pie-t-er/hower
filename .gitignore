@@ -1,7 +1,10 @@
 instance
 __pycache__
 .DS_Store
+/uploads
+hower.ics
 /myenv
 /node_modules
 hower.ics
 uploads
+/models

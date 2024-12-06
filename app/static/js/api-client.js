@@ -1,12 +1,14 @@
-import{ itineraryElement, toggleDropdown } from './ui-handlers.js';
+
+import { itineraryElement, toggleDropdown } from './ui-handlers.js';
+const { ipcRenderer } = require('electron');
 
 function loadItems() {
   fetch('api/returnAll')
-  .then(response => response.json())
-  .then(combined_list => {
+    .then(response => response.json())
+    .then(combined_list => {
       itineraryElement(combined_list);
-  })
-  .catch(error => console.error('Error loading tasks and events:', error));
+    })
+    .catch(error => console.error('Error loading tasks and events:', error));
 }
 
 function deleteItem(itemId, itemType) {
@@ -14,32 +16,33 @@ function deleteItem(itemId, itemType) {
   const endpoint = itemType === 'task' ? `/api/tasks/${itemId}` : `/api/events/${itemId}`;
 
   fetch(endpoint, {
-      method: 'DELETE',
-      headers: {
-          'Content-Type': 'application/json'
-      }
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
   })
-  .then(response => {
+    .then(response => {
       if (response.ok) {
-          // Remove the item from the UI after successful deletion
-          const itemElement = document.getElementById(`item-${itemId}`);
-          if (itemElement) {
-              itemElement.remove();
-          }
-          console.log(`${itemType} deleted successfully.`);
+        // Remove the item from the UI after successful deletion
+        const itemElement = document.getElementById(`item-${itemId}`);
+        if (itemElement) {
+          itemElement.remove();
+        }
+        console.log(`${itemType} deleted successfully.`);
       } else {
-          // Handle errors, if any
-          response.json().then(data => {
-              console.error(data.error || `Failed to delete ${itemType}.`);
-          });
+        // Handle errors, if any
+        response.json().then(data => {
+          console.error(data.error || `Failed to delete ${itemType}.`);
+        });
       }
-  })
-  .catch(error => console.error(`An error occurred: ${error}`));
+    })
+    .catch(error => console.error(`An error occurred: ${error}`));
 }
 
 // This function hasn't been implemented...
 function editItem(itemId, item) {
-
+  // Implement your edit logic here
 }
 
 function addTask() {
@@ -61,52 +64,67 @@ function addTask() {
   const colorInput = document.getElementById('taskColor');
   const color = colorInput.value; // Format: '#FFFFFF'
 
+  const notificationInput = document.getElementById('taskNotification');
+  const notification_offset = notificationInput.value ? parseInt(notificationInput.value) : null;
+
   console.log('Collected data');
 
-  if (task) {
-      console.log(task);
-      fetch('/api/tasks', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-              task: task,
-              location: location || null,
-              due_date: due_date || null,
-              due_time: due_time || null,
-              priority: priority || 5,
-              color: color || null
-          }),
-      })
+  if (taskContent) {
+    console.log(taskContent);
+    fetch('/api/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include credentials to ensure cookies are sent
+      body: JSON.stringify({
+        task: taskContent,
+        location: location || null,
+        due_date: due_date || null,
+        due_time: due_time || null,
+        priority: priority || 5,
+        color: color || null,
+        notification_offset: notification_offset,
+      }),
+    })
       .then(response => {
-          console.log(response);
-           if (!response.ok) {
-              console.log('uh oh');
-              console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task')
-              return response.json().then(err => { throw err; });
-          }
-          return response.json();
+        console.log(response);
+        if (!response.ok) {
+          console.log('uh oh');
+          console.log(
+            'I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to a task'
+          );
+          return response.json().then(err => {
+            throw err;
+          });
+        }
+        return response.json();
       })
       .then(data => {
-          console.log(data.message);
-          // Clear all input fields after successful addition
-          taskInput.value = '';
-          locationInput.value = '';
-          dueDateInput.value = '';
-          dueTimeInput.value = '';
-          priorityInput.value = '';
-          colorInput.value = '#4CAF50'; // Reset to default color
-          toggleDropdown();
-          loadItems();
+        console.log(data.message);
+
+        // Send IPC message to main process with new task details
+        const newTask = data.task; // Assuming the backend returns the new task in data.task
+        newTask.type = 'task'; // Ensure the type is set to 'task'
+        ipcRenderer.send('new-task-added', newTask);
+
+        // Clear all input fields after successful addition
+        taskInput.value = '';
+        locationInput.value = '';
+        dueDateInput.value = '';
+        dueTimeInput.value = '';
+        priorityInput.value = '';
+        notificationInput.value = '';
+        colorInput.value = '#4CAF50'; // Reset to default color
+        toggleDropdown();
+        loadItems();
       })
       .catch(error => {
-          console.error('Error adding task:', error.error || error);
-          alert(error.error || 'An error occurred while adding the task.');
+        console.error('Error adding task:', error.error || error);
+        alert(error.error || 'An error occurred while adding the task.');
       });
-  }
-  else {
-      alert('Task description cannot be empty.');
+  } else {
+    alert('Task description cannot be empty.');
   }
 }
 
@@ -129,50 +147,67 @@ function addEvent() {
   const endTimeInput = document.getElementById('endTime');
   const endTime = endTimeInput.value; // Format: 'HH:MM'
 
+  const notificationInput = document.getElementById('eventNotification');
+  const notification_offset = notificationInput.value ? parseInt(notificationInput.value) : null;
+
   console.log('Collected data');
 
-  if (event) {
-      console.log(event);
-      fetch('/api/events', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-              event: event,
-              location: location || null,
-              date: date || null,
-              time: time || null,
-              eDate: endDate || null,
-              eTime: endTime || null,
-          }),
-      })
+  if (eventTitle) {
+    console.log(eventTitle);
+    fetch('/api/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include credentials to ensure cookies are sent
+      body: JSON.stringify({
+        event: eventTitle,
+        location: location || null,
+        date: date || null,
+        time: time || null,
+        eDate: endDate || null,
+        eTime: endTime || null,
+        notification_offset: notification_offset,
+      }),
+    })
       .then(response => {
-          console.log(response);
-          if (!response.ok) {
-              console.log('uh oh');
-              console.log('I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to an event')
-              return response.json().then(err => { throw err; });
-          }
-          return response.json();
+        console.log(response);
+        if (!response.ok) {
+          console.log('uh oh');
+          console.log(
+            'I get an "Internal Server Error" here sometimes, usually has something to do with a wrong or null user_id being assigned to an event'
+          );
+          return response.json().then(err => {
+            throw err;
+          });
+        }
+        return response.json();
       })
       .then(data => {
-          console.log(data.message);
-          // Clear all input fields after successful addition
-          eventInput.value = '';
-          locationInput.value = '';
-          dateInput.value = '';
-          timeInput.value = '';
-          endDateInput.value = '';
-          endTimeInput.value = '';
-          toggleDropdown();
-          loadItems();
+        console.log(data.message);
+
+        // Send IPC message to main process with new event details
+        const newEvent = data.event; // Assuming the backend returns the new event in data.event
+        newEvent.type = 'event'; // Ensure the type is set to 'event'
+        ipcRenderer.send('new-event-added', newEvent);
+
+        // Clear all input fields after successful addition
+        eventInput.value = '';
+        locationInput.value = '';
+        dateInput.value = '';
+        timeInput.value = '';
+        endDateInput.value = '';
+        endTimeInput.value = '';
+        toggleDropdown();
+        loadItems();
       })
       .catch(error => {
-          console.error('Error adding event:', error.error || error);
-          alert(error.error || 'An error occurred while adding the event.');
+        console.error('Error adding event:', error.error || error);
+        alert(error.error || 'An error occurred while adding the event.');
       });
+  } else {
+    alert('Event title cannot be empty.');
   }
 }
 
-export{ loadItems, deleteItem, addTask, addEvent, editItem };
+export { loadItems, deleteItem, addTask, addEvent, editItem };
